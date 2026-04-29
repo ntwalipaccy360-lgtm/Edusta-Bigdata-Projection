@@ -40,8 +40,10 @@ static/              - Static assets
 ## UI Design (Updated April 2025)
 - **Landing Page**: `/` — Full-page hero with background video/image, features section, stats counters, about section, CTA
 - **Login Page**: `/accounts/login/` — Split-panel glassmorphism design with campus image background, AUCA logo, animated form
-- **Dashboard Shell** (`templates/base.html`): Dark navy sidebar (`#0a0f2e`), frosted-glass top header, animated page transitions
-- All pages use Tailwind CDN + custom CSS for glassmorphism, animations, and professional typography
+- **Dashboard Shell** (`templates/base.html`): Dark navy sidebar (`#0a0f2e`) with Rwanda green bottom accent, "Rwanda · Ministry of Education" label in sidebar, animated page transitions
+- **Branding**: Rwanda-national scope — Ministry of Education case study, Rwanda flag bar (green/yellow/blue), 3M+ students / 3456 schools / 30 districts across 5 provinces
+- All pages use Tailwind CDN + Inter font + custom CSS for glassmorphism, animations, and professional typography
+- Reference images used: live.staticflickr.com/54055190151, ktpress.rw/Students.jpg, encrypted-tbn0.gstatic.com (MinEduc logo)
 
 ## Navigation (Sidebar)
 - Overview → /performance/
