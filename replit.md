@@ -37,6 +37,12 @@ static/              - Static assets
 **Settings module**: `DJANGO_SETTINGS_MODULE=edustat.settings.development`
 **Port**: 5000 (webview)
 
+## UI Design (Updated April 2025)
+- **Landing Page**: `/` — Full-page hero with background video/image, features section, stats counters, about section, CTA
+- **Login Page**: `/accounts/login/` — Split-panel glassmorphism design with campus image background, AUCA logo, animated form
+- **Dashboard Shell** (`templates/base.html`): Dark navy sidebar (`#0a0f2e`), frosted-glass top header, animated page transitions
+- All pages use Tailwind CDN + custom CSS for glassmorphism, animations, and professional typography
+
 ## Navigation (Sidebar)
 - Overview → /performance/
 - Risk Tracker → /performance/risk-tracker/
