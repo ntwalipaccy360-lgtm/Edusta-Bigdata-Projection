@@ -15,7 +15,8 @@
                 50: '#e6f0ff', 100: '#cce0ff',
                 500: '#003DA5', 600: '#0033cc', 700: '#002999', 800: '#001f66', 900: '#001433',
               },
-              accent: '#E31837',
+              accent: '#006D33',
+              rwanda: { green: '#006D33', yellow: '#FAD201', sky: '#20A0D0' },
               surface: {
                 DEFAULT: '#ffffff', 50: '#fafbfc', 100: '#f4f6f9', 200: '#e4e7eb',
               },
@@ -31,6 +32,14 @@
       };
     </script>
     <style>
+      :root {
+        --rw-navy: #0a0f2e;
+        --rw-blue: #003DA5;
+        --rw-green: #006D33;
+        --rw-yellow: #FAD201;
+        --rw-sky: #20A0D0;
+        --bg-main: #f0f4f8;
+      }
       * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; }
 
       /* ─── Scrollbar ─── */
@@ -186,7 +195,9 @@
     {% block extra_head %}{% endblock %}
   </head>
 
-  <body class="bg-[#f4f6f9] antialiased">
+  <body class="bg-[#f0f4f8] antialiased">
+  <!-- Rwanda flag stripe – always visible -->
+  <div class="fixed top-0 left-0 right-0 z-[60] h-1" style="background:linear-gradient(90deg,#006D33 0%,#006D33 33.3%,#FAD201 33.3%,#FAD201 66.6%,#20A0D0 66.6%,#20A0D0 100%)"></div>
 
     <!-- Mobile overlay -->
     <div id="mobileMenuOverlay"
@@ -197,7 +208,7 @@
          SIDEBAR
     ═══════════════════════════════════════════════ -->
     <aside id="sidebar"
-      class="fixed left-0 top-0 h-full sidebar-expanded sidebar-transition sidebar-bg z-50
+      class="fixed left-0 top-1 h-[calc(100vh-4px)] sidebar-expanded sidebar-transition sidebar-bg z-50
              transform -translate-x-full lg:translate-x-0 shadow-2xl overflow-hidden">
 
       <!-- ── Logo ── -->
@@ -394,7 +405,7 @@
     <div id="mainContent" class="content-expanded content-transition min-h-screen">
 
       <!-- ── Top Header ── -->
-      <header class="top-header sticky top-0 z-30">
+      <header class="top-header sticky top-1 z-30">
         <div class="h-15 px-5 lg:px-7 flex items-center justify-between gap-4" style="height:60px;">
 
           <!-- Left -->

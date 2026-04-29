@@ -56,7 +56,7 @@
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
     <!-- Total Records -->
-    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-5 text-white relative overflow-hidden card-lift anim-up d2">
+    <div class="bg-gradient-to-br from-[#003DA5] to-[#001f6e] rounded-xl p-5 text-white relative overflow-hidden card-lift anim-up d2">
       <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float"></div>
       <div class="relative z-10">
         <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
@@ -86,7 +86,7 @@
     </div>
 
     <!-- Avg GPA -->
-    <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl p-5 text-white relative overflow-hidden card-lift anim-up d4">
+    <div class="bg-gradient-to-br from-[#20A0D0] to-[#003DA5] rounded-xl p-5 text-white relative overflow-hidden card-lift anim-up d4">
       <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float"></div>
       <div class="relative z-10">
         <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
@@ -101,7 +101,7 @@
     </div>
 
     <!-- Pass Rate -->
-    <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl p-5 text-white relative overflow-hidden card-lift anim-up d5">
+    <div class="bg-gradient-to-br from-[#006D33] to-[#004520] rounded-xl p-5 text-white relative overflow-hidden card-lift anim-up d5">
       <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float"></div>
       <div class="relative z-10">
         <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
@@ -434,7 +434,7 @@
       type: 'doughnut',
       data: {
         labels: ['First Class', 'Second Upper', 'Second Lower', 'At Risk'],
-        datasets: [{ data: [{{ first_class_count }}, {{ chart_data.1 }}, {{ chart_data.2 }}, {{ chart_data.3 }}], backgroundColor: ['#10b981','#3b82f6','#eab308','#ef4444'], borderWidth: 0, hoverOffset: 6 }]
+        datasets: [{ data: [{{ first_class_count }}, {{ chart_data.1 }}, {{ chart_data.2 }}, {{ chart_data.3 }}], backgroundColor: ['#006D33','#003DA5','#FAD201','#ef4444'], borderWidth: 0, hoverOffset: 6 }]
       },
       options: {
         responsive: true, maintainAspectRatio: true, cutout: '72%',
@@ -458,14 +458,14 @@
           {
             label: 'Avg GPA',
             data: deptGPAs,
-            backgroundColor: deptGPAs.map(v => v >= 3.5 ? '#10b981' : v >= 3.0 ? '#3b82f6' : v >= 2.5 ? '#f59e0b' : '#ef4444'),
+            backgroundColor: deptGPAs.map(v => v >= 3.5 ? '#006D33' : v >= 3.0 ? '#003DA5' : v >= 2.5 ? '#FAD201' : '#ef4444'),
             borderRadius: 6, barThickness: 32, yAxisID: 'y'
           },
           {
             label: 'Pass Rate %',
             data: passRates,
             type: 'line',
-            borderColor: '#6366f1',
+            borderColor: '#20A0D0',
             backgroundColor: 'rgba(99,102,241,.1)',
             borderWidth: 2, pointRadius: 4, fill: false, tension: 0.4, yAxisID: 'y2'
           }

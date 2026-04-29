@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% block title %}Staff Dashboard — EduStat Rwanda{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root { --rw-blue:#003DA5; --rw-green:#006D33; --rw-yellow:#FAD201; --rw-sky:#20A0D0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+  @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+  .anim-up{animation:fadeUp .5s ease-out both;}
+  .d1{animation-delay:.05s} .d2{animation-delay:.12s} .d3{animation-delay:.19s}
+  .d4{animation-delay:.26s} .d5{animation-delay:.33s} .d6{animation-delay:.40s}
+  .float{animation:float 3s ease-in-out infinite;}
+  .kpi-card{transition:all .3s ease;}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.1);}
+  .row-hover:hover{background:#f8faff;}
+
+  /* Risk badges */
+  .risk-critical{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;}
+  .risk-high{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+  .risk-medium{background:#fefce8;color:#a16207;border:1px solid #fef08a;}
+  .risk-low{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;}
+
+  /* Row highlight */
+  tr.critical-row{background:#fff8f8;}
+  tr.high-row{background:#fffbf5;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+
+  <!-- ── HEADER ── -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 anim-up d1">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
+      <p class="text-sm text-gray-500 mt-0.5">
+        🇷🇼 Rwanda Ministry of Education · Class Management &amp; Student Monitoring ·
+        <span class="font-semibold text-[#003DA5]">{{ selected_year }}</span>
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <form method="get" class="flex items-center gap-2">
+        <select name="academic_year" onchange="this.form.submit()"
+          class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white shadow-sm focus:ring-2 focus:ring-[#003DA5]">
+          {% for year in available_years %}<option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>{% endfor %}
+        </select>
+      </form>
+      <a href="{% url 'performance:export_csv' %}?academic_year={{ selected_year }}"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-[#006D33] hover:bg-[#005228] text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Export Report
+      </a>
+    </div>
+  </div>
+
+  <!-- ── KPI CARDS ── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-gradient-to-br from-[#003DA5] to-[#0055e0] rounded-xl p-5 text-white relative overflow-hidden kpi-card anim-up d2">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float pointer-events-none"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <p class="text-xs font-semibold text-white/70 uppercase tracking-wide">Total Students</p>
+        <p class="text-3xl font-black mt-1">{{ total_students }}</p>
+        <p class="text-xs text-white/60 mt-1">Under your monitoring</p>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-red-500 to-red-700 rounded-xl p-5 text-white relative overflow-hidden kpi-card anim-up d3">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float pointer-events-none"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <p class="text-xs font-semibold text-white/70 uppercase tracking-wide">At-Risk Students</p>
+        <p class="text-3xl font-black mt-1">{{ at_risk_count }}</p>
+        <p class="text-xs text-white/60 mt-1">Critical + High risk</p>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-5 text-white relative overflow-hidden kpi-card anim-up d4">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float pointer-events-none"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <p class="text-xs font-semibold text-white/70 uppercase tracking-wide">Critical</p>
+        <p class="text-3xl font-black mt-1">{{ critical_count }}</p>
+        <p class="text-xs text-white/60 mt-1">CA below 15 — urgent</p>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-[#006D33] to-[#00a550] rounded-xl p-5 text-white relative overflow-hidden kpi-card anim-up d5">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float pointer-events-none"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        </div>
+        <p class="text-xs font-semibold text-white/70 uppercase tracking-wide">On Track</p>
+        <p class="text-3xl font-black mt-1">{{ low_count }}</p>
+        <p class="text-xs text-white/60 mt-1">Low risk students</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STUDENT TABLE + SUBJECT PANEL ── -->
+  <div class="grid lg:grid-cols-3 gap-5">
+
+    <!-- Student List (2/3 width) -->
+    <div class="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden anim-up d3">
+      <div class="px-5 py-4 border-b border-gray-100">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-bold text-gray-900">Student Performance List</h3>
+            <p class="text-xs text-gray-500 mt-0.5">At-risk students shown first — sorted by risk level</p>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="px-2 py-1 risk-critical text-xs font-bold rounded-full">● Critical ({{ critical_count }})</span>
+            <span class="px-2 py-1 risk-high text-xs font-bold rounded-full">● High ({{ high_count }})</span>
+            <span class="px-2 py-1 risk-medium text-xs font-bold rounded-full">● Medium ({{ medium_count }})</span>
+            <span class="px-2 py-1 risk-low text-xs font-bold rounded-full">● Low ({{ low_count }})</span>
+          </div>
+        </div>
+        <!-- Search/filter -->
+        <form method="get" class="mt-3 flex gap-2">
+          <input type="hidden" name="academic_year" value="{{ selected_year }}" />
+          <input type="text" name="search" value="{{ search }}" placeholder="Search by name or ID…"
+            class="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#003DA5] outline-none" />
+          <select name="department" class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#003DA5]">
+            <option value="">All Departments</option>
+            {% for dept in departments %}
+            <option value="{{ dept.id }}" {% if dept_filter == dept.id|stringformat:"s" %}selected{% endif %}>{{ dept.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="px-4 py-2 bg-[#003DA5] text-white text-sm font-semibold rounded-lg hover:bg-[#002d80] transition-colors">Filter</button>
+        </form>
+      </div>
+
+      <div class="overflow-x-auto max-h-96 overflow-y-auto">
+        <table class="w-full text-sm">
+          <thead class="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
+            <tr>
+              <th class="text-left text-xs font-bold text-gray-500 uppercase tracking-wide px-5 py-3">Student</th>
+              <th class="text-left text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">Dept</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">CA Avg</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">Total</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">GPA</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">Attend.</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">Risk</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            {% for s in student_data %}
+            <tr class="{% if s.risk == 'critical' %}critical-row{% elif s.risk == 'high' %}high-row{% endif %} row-hover transition-colors">
+              <td class="px-5 py-3">
+                <div class="flex items-center gap-3">
+                  {% if s.risk == 'critical' %}
+                  <span class="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 animate-pulse"></span>
+                  {% elif s.risk == 'high' %}
+                  <span class="w-2 h-2 bg-orange-400 rounded-full flex-shrink-0"></span>
+                  {% else %}
+                  <span class="w-2 h-2 bg-gray-200 rounded-full flex-shrink-0"></span>
+                  {% endif %}
+                  <div>
+                    <p class="font-semibold text-gray-800">{{ s.student.first_name }} {{ s.student.last_name }}</p>
+                    <p class="text-xs text-gray-400">{{ s.student.student_id }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-3 py-3 text-gray-500 text-xs">{{ s.student.department.code }}</td>
+              <td class="px-3 py-3 text-center font-bold {% if s.ca_avg < 15 %}text-red-600{% elif s.ca_avg < 20 %}text-orange-500{% else %}text-gray-700{% endif %}">{{ s.ca_avg }}</td>
+              <td class="px-3 py-3 text-center text-gray-700">{{ s.total_avg }}</td>
+              <td class="px-3 py-3 text-center text-gray-700">{{ s.gpa }}</td>
+              <td class="px-3 py-3 text-center text-gray-600">{{ s.attendance }}%</td>
+              <td class="px-3 py-3 text-center">
+                <span class="px-2 py-0.5 risk-{{ s.risk }} text-xs font-bold rounded-full">{{ s.risk|capfirst }}</span>
+              </td>
+              <td class="px-3 py-3 text-center">
+                <a href="{% url 'performance:student_profile' s.student.student_id %}"
+                  class="text-xs font-semibold text-[#003DA5] hover:underline">View</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="px-5 py-12 text-center text-gray-400">
+                <svg class="w-10 h-10 mx-auto mb-2 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <p class="text-sm font-medium">No students found</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Subject Performance -->
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm anim-up d4">
+      <div class="px-5 py-4 border-b border-gray-100">
+        <h3 class="text-sm font-bold text-gray-900">Subject Performance</h3>
+        <p class="text-xs text-gray-500 mt-0.5">Average scores by course</p>
+      </div>
+      <div class="divide-y divide-gray-50">
+        {% for subj in subject_list %}
+        <div class="px-5 py-3">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-semibold text-gray-700">{{ subj.code }}</span>
+            <span class="text-xs font-bold {% if subj.avg >= 60 %}text-[#006D33]{% elif subj.avg >= 50 %}text-amber-600{% else %}text-red-600{% endif %}">{{ subj.avg }}/100</span>
+          </div>
+          <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div class="h-full rounded-full {% if subj.avg >= 60 %}bg-[#006D33]{% elif subj.avg >= 50 %}bg-amber-400{% else %}bg-red-400{% endif %}" style="width:{{ subj.avg }}%"></div>
+          </div>
+          <div class="flex justify-between mt-1">
+            <span class="text-[10px] text-gray-400">{{ subj.count }} records</span>
+            <span class="text-[10px] font-semibold {% if subj.pass_rate >= 70 %}text-[#006D33]{% else %}text-orange-500{% endif %}">{{ subj.pass_rate }}% pass</span>
+          </div>
+        </div>
+        {% empty %}
+        <div class="px-5 py-10 text-center text-gray-400 text-sm">No subject data yet</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── INTERVENTION TIPS ── -->
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 anim-up d5">
+    <h3 class="text-sm font-bold text-gray-900 mb-4">Teaching Intervention Guide</h3>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-red-50 border border-red-100 rounded-xl p-4">
+        <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center mb-3">
+          <span class="text-white font-black text-xs">!</span>
+        </div>
+        <p class="text-xs font-bold text-red-800 mb-1">Critical Risk (CA&lt;15)</p>
+        <p class="text-[11px] text-red-600 leading-relaxed">Schedule immediate one-on-one sessions. Notify parents/guardians. Create remedial study plan.</p>
+      </div>
+      <div class="bg-orange-50 border border-orange-100 rounded-xl p-4">
+        <div class="w-8 h-8 bg-orange-400 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
+        </div>
+        <p class="text-xs font-bold text-orange-800 mb-1">High Risk (CA&lt;20)</p>
+        <p class="text-[11px] text-orange-700 leading-relaxed">Assign peer tutoring. Monitor weekly. Provide extra practice exercises and encourage study groups.</p>
+      </div>
+      <div class="bg-yellow-50 border border-yellow-100 rounded-xl p-4">
+        <div class="w-8 h-8 bg-yellow-400 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-4 h-4 text-yellow-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <p class="text-xs font-bold text-yellow-800 mb-1">Medium Risk (CA&lt;25)</p>
+        <p class="text-[11px] text-yellow-700 leading-relaxed">Encourage consistent study habits. Review understanding of key topics. Monthly check-ins recommended.</p>
+      </div>
+      <div class="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-4">
+        <div class="w-8 h-8 bg-[#006D33] rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <p class="text-xs font-bold text-[#006D33] mb-1">Low Risk (CA≥25)</p>
+        <p class="text-[11px] text-green-700 leading-relaxed">Continue strong support. Offer enrichment and advanced opportunities. Recognise achievement.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

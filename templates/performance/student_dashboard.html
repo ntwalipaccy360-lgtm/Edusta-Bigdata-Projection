@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard — EduStat Rwanda{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root {
+    --rw-navy: #0a0f2e;
+    --rw-blue: #003DA5;
+    --rw-green: #006D33;
+    --rw-yellow: #FAD201;
+    --rw-sky: #20A0D0;
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+  @keyframes progressFill { from { width:0; } }
+  .anim-up { animation: fadeUp 0.5s ease-out both; }
+  .d1{animation-delay:.05s} .d2{animation-delay:.12s} .d3{animation-delay:.19s}
+  .d4{animation-delay:.26s} .d5{animation-delay:.33s} .d6{animation-delay:.40s}
+  .float { animation: float 3s ease-in-out infinite; }
+  .prog { animation: progressFill 1.2s ease-out both; }
+  .kpi-card { transition: all .3s ease; }
+  .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.1); }
+
+  /* Prediction badge */
+  .pred-green { background: linear-gradient(135deg,#006D33,#00a550); }
+  .pred-red   { background: linear-gradient(135deg,#c0392b,#e74c3c); }
+  .pred-yellow{ background: linear-gradient(135deg,#d4a017,#FAD201); color: #1e293b !important; }
+  .pred-gray  { background: linear-gradient(135deg,#64748b,#94a3b8); }
+
+  /* Course row */
+  .course-row:hover { background: #f8faff; }
+
+  /* Rec card */
+  .rec-warning { border-left: 4px solid #ef4444; background: #fef2f2; }
+  .rec-success { border-left: 4px solid #006D33; background: #f0fdf4; }
+  .rec-info    { border-left: 4px solid #003DA5; background: #eff6ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+
+  <!-- ── WELCOME HEADER ── -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 anim-up d1">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">My Academic Dashboard</h1>
+      <p class="text-sm text-gray-500 mt-0.5">
+        🇷🇼 Rwanda Ministry of Education ·
+        {% if student %}{{ student.first_name }} {{ student.last_name }} · {{ student.department.name }}{% else %}Student Portal{% endif %}
+        · <span class="font-semibold text-[#003DA5]">{{ selected_year }}</span>
+      </p>
+    </div>
+    {% if available_years %}
+    <form method="get">
+      <select name="academic_year" onchange="this.form.submit()"
+        class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white shadow-sm focus:ring-2 focus:ring-[#003DA5]">
+        {% for year in available_years %}
+        <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    {% endif %}
+  </div>
+
+  <!-- ── PREDICTION BANNER ── -->
+  <div class="pred-{{ pred_color }} rounded-2xl p-5 text-white relative overflow-hidden anim-up d2">
+    <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-16 -mt-16 float pointer-events-none"></div>
+    <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <p class="text-sm font-semibold text-white/75 uppercase tracking-wide mb-1">AI Predicted Outcome</p>
+        <h2 class="text-3xl font-black">{{ prediction }}</h2>
+        <p class="text-sm text-white/65 mt-1">
+          {% if pred_color == 'green' %}You are on a strong academic trajectory. Keep up the excellent work!
+          {% elif pred_color == 'red' %}Immediate action required. Please contact your academic advisor.
+          {% elif pred_color == 'yellow' %}You are at a borderline level. Focused effort can significantly improve your outcome.
+          {% else %}No prediction available for this period.{% endif %}
+        </p>
+      </div>
+      <div class="flex-shrink-0 text-center sm:text-right">
+        <p class="text-xs text-white/60 uppercase tracking-wide">School Average</p>
+        <p class="text-3xl font-black">{{ school_avg }}<span class="text-lg font-medium text-white/60">/100</span></p>
+        <p class="text-xs text-white/50 mt-1">Nationwide benchmark</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KPI CARDS ── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+    <!-- GPA -->
+    <div class="bg-gradient-to-br from-[#003DA5] to-[#0055e0] rounded-xl p-5 text-white relative overflow-hidden kpi-card anim-up d2">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float pointer-events-none"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/>
+          </svg>
+        </div>
+        <p class="text-xs font-semibold text-white/70 uppercase tracking-wide">My GPA</p>
+        <p class="text-3xl font-black mt-1">{{ gpa }}</p>
+        <p class="text-xs text-white/60 mt-1">out of 4.0</p>
+      </div>
+    </div>
+
+    <!-- Average Score -->
+    <div class="bg-gradient-to-br from-[#006D33] to-[#00a550] rounded-xl p-5 text-white relative overflow-hidden kpi-card anim-up d3">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float pointer-events-none"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+          </svg>
+        </div>
+        <p class="text-xs font-semibold text-white/70 uppercase tracking-wide">Avg Score</p>
+        <p class="text-3xl font-black mt-1">{{ avg_total }}</p>
+        <p class="text-xs text-white/60 mt-1">out of 100</p>
+      </div>
+    </div>
+
+    <!-- CA Score -->
+    <div class="bg-gradient-to-br from-[#20A0D0] to-[#0080b0] rounded-xl p-5 text-white relative overflow-hidden kpi-card anim-up d4">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float pointer-events-none"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </div>
+        <p class="text-xs font-semibold text-white/70 uppercase tracking-wide">CA Score</p>
+        <p class="text-3xl font-black mt-1">{{ avg_ca }}</p>
+        <p class="text-xs text-white/60 mt-1">Continuous Assessment</p>
+      </div>
+    </div>
+
+    <!-- Attendance -->
+    <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-5 text-white relative overflow-hidden kpi-card anim-up d5">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float pointer-events-none"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <p class="text-xs font-semibold text-white/70 uppercase tracking-wide">Attendance</p>
+        <p class="text-3xl font-black mt-1">{{ avg_att }}%</p>
+        <p class="text-xs text-white/60 mt-1">{% if avg_att >= 75 %}Above threshold ✓{% else %}Below 75% threshold ⚠{% endif %}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOWER GRID: courses + recommendations ── -->
+  <div class="grid lg:grid-cols-3 gap-5">
+
+    <!-- Course Performance -->
+    <div class="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden anim-up d4">
+      <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-gray-900">Subject Performance</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Your grades per course this year</p>
+        </div>
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-[#003DA5]/10 text-[#003DA5] text-xs font-bold rounded-full">
+          {{ course_data|length }} Course{% if course_data|length != 1 %}s{% endif %}
+        </span>
+      </div>
+
+      {% if course_data %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-100">
+              <th class="text-left text-xs font-bold text-gray-500 uppercase tracking-wide px-5 py-3">Course</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">CA</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">Mid</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">Final</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">Total</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">Attend.</th>
+              <th class="text-center text-xs font-bold text-gray-500 uppercase tracking-wide px-3 py-3">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            {% for c in course_data %}
+            <tr class="course-row transition-colors">
+              <td class="px-5 py-3 font-semibold text-gray-800">{{ c.course }}</td>
+              <td class="px-3 py-3 text-center text-gray-600">{{ c.ca }}</td>
+              <td class="px-3 py-3 text-center text-gray-600">{{ c.midterm }}</td>
+              <td class="px-3 py-3 text-center text-gray-600">{{ c.final }}</td>
+              <td class="px-3 py-3 text-center font-bold text-gray-800">{{ c.total }}</td>
+              <td class="px-3 py-3 text-center text-gray-600">{{ c.attendance }}%</td>
+              <td class="px-3 py-3 text-center">
+                {% if c.status == 'Pass' %}
+                <span class="px-2.5 py-1 bg-[#006D33]/12 text-[#006D33] text-xs font-bold rounded-full">Pass</span>
+                {% else %}
+                <span class="px-2.5 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-full">Fail</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="px-5 py-12 text-center text-gray-400">
+        <svg class="w-12 h-12 mx-auto mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+        </svg>
+        <p class="text-sm font-medium">No academic records found</p>
+        <p class="text-xs mt-1">Records for {{ selected_year }} will appear here</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Recommendations -->
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm anim-up d5">
+      <div class="px-5 py-4 border-b border-gray-100">
+        <h3 class="text-sm font-bold text-gray-900">Recommendations</h3>
+        <p class="text-xs text-gray-500 mt-0.5">Personalised academic guidance</p>
+      </div>
+      <div class="p-4 space-y-3">
+        {% for rec in recommendations %}
+        <div class="rec-{{ rec.type }} rounded-xl p-4">
+          <div class="flex items-start gap-3">
+            <span class="text-lg flex-shrink-0">{{ rec.icon }}</span>
+            <p class="text-xs text-gray-700 leading-relaxed">{{ rec.text }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Performance bars -->
+      <div class="px-5 pb-5 space-y-3 border-t border-gray-50 pt-4">
+        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Performance Summary</p>
+        <div>
+          <div class="flex justify-between text-xs text-gray-600 mb-1">
+            <span>Average Score</span>
+            <span class="font-bold">{{ avg_total }}/100</span>
+          </div>
+          <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div class="h-full bg-[#003DA5] rounded-full prog" style="width:{{ avg_total }}%"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-600 mb-1">
+            <span>CA Score</span>
+            <span class="font-bold">{{ avg_ca }}/30</span>
+          </div>
+          <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div class="h-full bg-[#006D33] rounded-full prog" style="width:{% widthratio avg_ca 30 100 %}%"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-600 mb-1">
+            <span>Attendance</span>
+            <span class="font-bold {% if avg_att >= 75 %}text-[#006D33]{% else %}text-red-600{% endif %}">{{ avg_att }}%</span>
+          </div>
+          <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div class="h-full rounded-full prog {% if avg_att >= 75 %}bg-[#006D33]{% else %}bg-red-400{% endif %}" style="width:{{ avg_att }}%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER INFO ── -->
+  <div class="bg-gradient-to-r from-[#0a0f2e] to-[#003DA5] rounded-xl p-5 text-white anim-up d6">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="flex-1">
+        <h3 class="font-bold text-base">Need Academic Support?</h3>
+        <p class="text-white/60 text-sm mt-1">Contact your department academic advisor or visit the student support centre.</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a href="{% url 'performance:student_list' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white/15 hover:bg-white/25 text-white text-sm font-semibold rounded-xl transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Student Directory
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
