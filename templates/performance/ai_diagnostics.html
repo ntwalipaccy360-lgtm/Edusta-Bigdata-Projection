@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% block title %}Data Management - EduStat{% endblock %}
+
+{% block extra_head %}
+<style>
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeInLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes fadeInRight { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  .anim-up    { animation: fadeInUp   .5s ease-out both; }
+  .anim-left  { animation: fadeInLeft .5s ease-out both; }
+  .anim-right { animation: fadeInRight .5s ease-out both; }
+  .d1{animation-delay:.05s;} .d2{animation-delay:.12s;} .d3{animation-delay:.19s;} .d4{animation-delay:.26s;}
+  .card-lift { transition: all .3s cubic-bezier(.4,0,.2,1); }
+  .card-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+  .pulse-green { animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+  .drop-zone { border: 2px dashed #d1d5db; transition: all .3s; }
+  .drop-zone:hover { border-color: #6366f1; background-color: #eef2ff; }
+  .drop-zone.drag-over { border-color: #6366f1; background-color: #eef2ff; transform: scale(1.01); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+
+  <!-- Header -->
+  <div class="anim-up d1">
+    <div class="flex items-center gap-3 mb-1">
+      <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Data Management & ML Engine</h1>
+        <p class="text-sm text-gray-500">Upload student datasets, monitor model health, and commit individual records</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+  <div class="space-y-2 anim-up d1">
+    {% for message in messages %}
+    <div class="flex items-start gap-3 p-4 rounded-xl border
+      {% if message.tags == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800
+      {% else %}bg-red-50 border-red-200 text-red-800{% endif %}">
+      <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+        {% if message.tags == 'success' %}
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        {% else %}
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        {% endif %}
+      </svg>
+      <p class="text-sm font-medium">{{ message }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Top Row: ML Health + Bulk Upload -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+    <!-- ML Model Health -->
+    <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-soft card-lift anim-left d2">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-base font-bold text-gray-900">ML Model Health</h3>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+          <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full pulse-green"></span>
+          Models Active
+        </span>
+      </div>
+
+      <!-- Model Grid -->
+      <div class="grid grid-cols-2 gap-3 mb-5">
+        <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
+          <p class="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">Model Accuracy</p>
+          <p class="text-3xl font-black text-purple-900">{{ accuracy }}%</p>
+          <p class="text-xs text-purple-500 mt-0.5">Test dataset</p>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Training Size</p>
+          <p class="text-3xl font-black text-gray-900">{{ total_samples }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">Records processed</p>
+        </div>
+      </div>
+
+      <!-- Model Status -->
+      <div class="space-y-3 mb-5">
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-emerald-500 rounded-full pulse-green"></div>
+            <span class="text-sm font-semibold text-gray-700">Random Forest</span>
+            <span class="text-xs text-gray-400">(Primary)</span>
+          </div>
+          <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Active ✓</span>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span class="text-sm font-semibold text-gray-700">Logistic Regression</span>
+            <span class="text-xs text-gray-400">(Baseline)</span>
+          </div>
+          <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Active ✓</span>
+        </div>
+      </div>
+
+      <!-- Feature Importance -->
+      <div>
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Feature Influence on Predictions</h4>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <span class="text-sm text-gray-700 font-medium">Continuous Assessment (CA)</span>
+              <span class="text-sm font-bold text-gray-900">{{ ca_importance }}%</span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-2">
+              <div class="bg-purple-600 h-2 rounded-full transition-all" style="width: {{ ca_importance }}%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <span class="text-sm text-gray-700 font-medium">Attendance Rate</span>
+              <span class="text-sm font-bold text-gray-900">{{ attendance_importance }}%</span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-2">
+              <div class="bg-yellow-400 h-2 rounded-full transition-all" style="width: {{ attendance_importance }}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Upload -->
+    <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-soft card-lift anim-right d2">
+      <h3 class="text-base font-bold text-gray-900 mb-1">Bulk Data Upload</h3>
+      <p class="text-sm text-gray-500 mb-5">Upload student academic records as CSV or Excel. The system will automatically process, validate, and train the ML model.</p>
+
+      <form action="{% url 'performance:bulk_upload' %}" method="post" enctype="multipart/form-data" id="uploadForm">
+        {% csrf_token %}
+        <div id="dropZone"
+          class="drop-zone rounded-xl p-8 text-center cursor-pointer mb-4"
+          onclick="document.getElementById('fileInput').click()">
+          <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <p class="text-sm font-semibold text-gray-600">Drop your file here or <span class="text-indigo-600">browse</span></p>
+          <p class="text-xs text-gray-400 mt-1">Supports CSV and Excel (.xlsx) files</p>
+          <p id="fileName" class="text-xs font-bold text-indigo-600 mt-2 hidden"></p>
+          <input type="file" id="fileInput" name="file" accept=".csv,.xlsx" class="hidden" onchange="handleFileSelect(this)">
+        </div>
+
+        <button type="submit"
+          class="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-lg transition-all text-sm tracking-wide shadow-md">
+          Process & Import Dataset
+        </button>
+      </form>
+
+      <div class="mt-5 p-4 bg-blue-50 rounded-xl border border-blue-100">
+        <h4 class="text-xs font-bold text-blue-800 uppercase tracking-wider mb-2">Required CSV Columns</h4>
+        <div class="grid grid-cols-2 gap-1">
+          {% for col in csv_columns %}
+          <code class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-mono">{{ col }}</code>
+          {% endfor %}
+        </div>
+      </div>
+
+      <a href="{% url 'performance:download_template' %}"
+        class="mt-3 flex items-center justify-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Download CSV Template
+      </a>
+    </div>
+  </div>
+
+  <!-- Manual Entry Form -->
+  <div class="bg-white rounded-xl shadow-soft border border-gray-100 overflow-hidden anim-up d3">
+    <div class="px-5 py-4 border-b border-gray-100 bg-gray-50">
+      <h3 class="text-base font-bold text-gray-900">Manual Record Entry</h3>
+      <p class="text-xs text-gray-400 mt-0.5">Add or correct an individual student record</p>
+    </div>
+    <div class="p-5">
+      <form action="{% url 'performance:submit_record' %}" method="post">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Student ID</label>
+            <input type="text" name="student_id" required placeholder="e.g. 2024001"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm transition-all">
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Course</label>
+            <select name="course_code"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm transition-all">
+              {% for course in courses %}
+              <option value="{{ course.code }}">{{ course.code }} — {{ course.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">CA Score (Max 40)</label>
+            <input type="number" name="ca_score" step="0.1" min="0" max="40" required
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm transition-all"
+              placeholder="e.g. 28">
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Attendance Rate (0–1)</label>
+            <input type="number" name="attendance" step="0.01" min="0" max="1" required
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm transition-all"
+              placeholder="e.g. 0.85">
+          </div>
+        </div>
+
+        <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between gap-4">
+          <p class="text-xs text-gray-400">All fields are required. Student must already exist in the system.</p>
+          <button type="submit"
+            class="px-8 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-lg transition-all text-sm tracking-wide shadow-md flex-shrink-0">
+            Commit to Database
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function handleFileSelect(input) {
+    const fileName = input.files[0]?.name;
+    if (fileName) {
+      document.getElementById('fileName').textContent = '✓ ' + fileName;
+      document.getElementById('fileName').classList.remove('hidden');
+    }
+  }
+
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length) {
+      document.getElementById('fileInput').files = files;
+      document.getElementById('fileName').textContent = '✓ ' + files[0].name;
+      document.getElementById('fileName').classList.remove('hidden');
+    }
+  });
+</script>
+{% endblock %}

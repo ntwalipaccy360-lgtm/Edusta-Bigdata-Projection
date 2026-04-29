@@ -1,0 +1,489 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard Overview - EduStat{% endblock %}
+
+{% block extra_head %}
+<style>
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeInLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes fadeInRight { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+  @keyframes progressFill { from { width:0; } }
+  .anim-up   { animation: fadeInUp   0.5s ease-out both; }
+  .anim-left { animation: fadeInLeft 0.5s ease-out both; }
+  .anim-right{ animation: fadeInRight 0.5s ease-out both; }
+  .d1 { animation-delay:.05s; } .d2 { animation-delay:.12s; } .d3 { animation-delay:.19s; }
+  .d4 { animation-delay:.26s; } .d5 { animation-delay:.33s; } .d6 { animation-delay:.40s; }
+  .d7 { animation-delay:.47s; } .d8 { animation-delay:.54s; }
+  .float { animation: float 3s ease-in-out infinite; }
+  .card-lift { transition: all .3s cubic-bezier(.4,0,.2,1); }
+  .card-lift:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,.1); }
+  .progress-fill { animation: progressFill 1.2s ease-out both; }
+  .pulse-red { animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+
+  <!-- ── PAGE HEADER ── -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 anim-up d1">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+      <p class="text-sm text-gray-500 mt-0.5">AUCA · Intelligent Academic Analytics Platform · <span class="font-semibold text-primary-600">{{ selected_year }}</span></p>
+    </div>
+    <div class="flex items-center gap-3">
+      <form method="get" class="flex items-center gap-2">
+        <label class="text-sm text-gray-500 font-medium hidden sm:block">Year:</label>
+        <select name="academic_year" onchange="this.form.submit()"
+          class="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 bg-white shadow-sm">
+          {% for year in available_years %}
+          <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+          {% endfor %}
+        </select>
+      </form>
+      <a href="{% url 'performance:management' %}"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-lg transition-all shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        Import Data
+      </a>
+    </div>
+  </div>
+
+  <!-- ── KPI CARDS ── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+    <!-- Total Records -->
+    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-5 text-white relative overflow-hidden card-lift anim-up d2">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <p class="text-xs font-semibold text-white/80 uppercase tracking-wide">Total Records</p>
+        <p class="text-3xl font-black mt-1">{{ total_count }}</p>
+        <p class="text-xs text-white/70 mt-1">Academic records this year</p>
+      </div>
+    </div>
+
+    <!-- At-Risk Alerts -->
+    <div class="bg-gradient-to-br from-red-500 to-red-700 rounded-xl p-5 text-white relative overflow-hidden card-lift anim-up d3">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <p class="text-xs font-semibold text-white/80 uppercase tracking-wide">AI Risk Alerts</p>
+        <p class="text-3xl font-black mt-1">{{ alert_count }}</p>
+        <p class="text-xs text-white/70 mt-1">Critical (CA &lt; 15)</p>
+      </div>
+    </div>
+
+    <!-- Avg GPA -->
+    <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl p-5 text-white relative overflow-hidden card-lift anim-up d4">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <p class="text-xs font-semibold text-white/80 uppercase tracking-wide">Institutional GPA</p>
+        <p class="text-3xl font-black mt-1">{{ avg_gpa|floatformat:2 }}</p>
+        <p class="text-xs text-white/70 mt-1">Avg score: {{ avg_score }}/100</p>
+      </div>
+    </div>
+
+    <!-- Pass Rate -->
+    <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl p-5 text-white relative overflow-hidden card-lift anim-up d5">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10 float"></div>
+      <div class="relative z-10">
+        <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+        <p class="text-xs font-semibold text-white/80 uppercase tracking-wide">Pass Rate</p>
+        <p class="text-3xl font-black mt-1">{{ pass_rate }}%</p>
+        <p class="text-xs text-white/70 mt-1">{{ pass_count }} passed · {{ fail_count }} failed</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHARTS ROW ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+    <!-- Academic Distribution Donut -->
+    <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-soft card-lift anim-left d5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold text-gray-900">Academic Distribution</h3>
+        <span class="text-xs text-gray-400 px-2 py-1 bg-gray-50 rounded-full">{{ selected_year }}</span>
+      </div>
+      <div class="flex justify-center mb-4">
+        <div class="relative" style="height:170px;width:170px;">
+          <canvas id="standingChart"></canvas>
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="text-center">
+              <div class="text-2xl font-black text-gray-900">{{ total_count }}</div>
+              <div class="text-xs text-gray-400">Records</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-sm px-2 py-1.5 rounded-lg hover:bg-gray-50">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+            <span class="text-gray-600 text-xs">First Class (≥80)</span>
+          </div>
+          <span class="font-bold text-gray-900 text-sm">{{ first_class_count }}</span>
+        </div>
+        <div class="flex items-center justify-between text-sm px-2 py-1.5 rounded-lg hover:bg-gray-50">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+            <span class="text-gray-600 text-xs">Second Upper (70-79)</span>
+          </div>
+          <span class="font-bold text-gray-900 text-sm">{{ chart_data.1 }}</span>
+        </div>
+        <div class="flex items-center justify-between text-sm px-2 py-1.5 rounded-lg hover:bg-gray-50">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500 flex-shrink-0"></span>
+            <span class="text-gray-600 text-xs">Second Lower (50-69)</span>
+          </div>
+          <span class="font-bold text-gray-900 text-sm">{{ chart_data.2 }}</span>
+        </div>
+        <div class="flex items-center justify-between text-sm px-2 py-1.5 rounded-lg hover:bg-red-50">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500 pulse-red flex-shrink-0"></span>
+            <span class="text-gray-600 text-xs">At Risk (&lt;50)</span>
+          </div>
+          <span class="font-bold text-red-600 text-sm">{{ chart_data.3 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pass vs Fail + ML Engine -->
+    <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-soft card-lift anim-up d6">
+      <h3 class="text-base font-bold text-gray-900 mb-4">Pass vs Fail Breakdown</h3>
+
+      <!-- Large pass/fail gauge -->
+      <div class="relative mb-4">
+        <div class="flex items-end justify-between mb-1">
+          <span class="text-xs font-semibold text-emerald-600">PASS {{ pass_rate }}%</span>
+          <span class="text-xs font-semibold text-red-500">FAIL {% widthratio fail_count total_count 100 %}%</span>
+        </div>
+        <div class="w-full h-5 bg-red-100 rounded-full overflow-hidden">
+          <div class="h-5 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full progress-fill transition-all"
+            style="width: {{ pass_rate }}%"></div>
+        </div>
+        <div class="flex justify-between mt-1">
+          <span class="text-xs text-gray-500">{{ pass_count }} students passed</span>
+          <span class="text-xs text-gray-500">{{ fail_count }} need intervention</span>
+        </div>
+      </div>
+
+      <!-- ML Engine Status -->
+      <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 text-white mt-4">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-2 h-2 bg-emerald-400 rounded-full pulse-red"></div>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">ML Engine Active</span>
+        </div>
+        <p class="text-xs font-semibold text-white/80 mb-2">Prediction Models Running</p>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-white/60">Random Forest</span>
+            <span class="text-xs font-bold text-emerald-400">Primary ✓</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-white/60">Logistic Regression</span>
+            <span class="text-xs font-bold text-blue-400">Baseline ✓</span>
+          </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-white/10 grid grid-cols-2 gap-2">
+          <div>
+            <p class="text-xs text-white/50">CA Influence</p>
+            <p class="text-lg font-black">65%</p>
+          </div>
+          <div>
+            <p class="text-xs text-white/50">Attendance</p>
+            <p class="text-lg font-black">35%</p>
+          </div>
+        </div>
+      </div>
+
+      <a href="{% url 'performance:management' %}"
+        class="mt-3 flex items-center justify-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-800 transition-colors">
+        View Full Diagnostics →
+      </a>
+    </div>
+
+    <!-- Quick Actions + Stats -->
+    <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-soft card-lift anim-right d6">
+      <h3 class="text-base font-bold text-gray-900 mb-4">Quick Actions</h3>
+      <div class="space-y-3">
+        <a href="{% url 'performance:risk_tracker' %}"
+          class="flex items-center gap-3 p-3 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-all group">
+          <div class="w-9 h-9 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900">Risk Tracker</p>
+            <p class="text-xs text-gray-500">{{ alert_count }} critical alerts</p>
+          </div>
+          <svg class="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+
+        <a href="{% url 'performance:graduation' %}"
+          class="flex items-center gap-3 p-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-xl transition-all group">
+          <div class="w-9 h-9 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900">Graduation</p>
+            <p class="text-xs text-gray-500">{{ pass_count }} students ready</p>
+          </div>
+          <svg class="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+
+        <a href="{% url 'performance:insights' %}"
+          class="flex items-center gap-3 p-3 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-xl transition-all group">
+          <div class="w-9 h-9 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900">System Insights</p>
+            <p class="text-xs text-gray-500">Department analytics</p>
+          </div>
+          <svg class="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+
+        <a href="{% url 'performance:management' %}"
+          class="flex items-center gap-3 p-3 bg-purple-50 hover:bg-purple-100 border border-purple-100 rounded-xl transition-all group">
+          <div class="w-9 h-9 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900">Import Data</p>
+            <p class="text-xs text-gray-500">Upload CSV / Excel</p>
+          </div>
+          <svg class="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DEPARTMENT PERFORMANCE ── -->
+  <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-soft card-lift anim-up d7">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h3 class="text-base font-bold text-gray-900">Department Performance</h3>
+        <p class="text-xs text-gray-400 mt-0.5">Average GPA and pass rates by department</p>
+      </div>
+      <span class="text-xs bg-primary-50 text-primary-600 font-semibold px-3 py-1 rounded-full">{{ selected_year }}</span>
+    </div>
+    <div style="height:260px;">
+      <canvas id="deptChart"></canvas>
+    </div>
+    {% if dept_stats %}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-gray-100">
+      {% for dept in dept_stats|slice:":4" %}
+      <div class="bg-gray-50 rounded-lg p-3 hover:bg-primary-50 transition-colors">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs font-bold text-gray-500">{{ dept.code }}</span>
+          <span class="text-xs font-bold {% if dept.pass_rate >= 70 %}text-emerald-600{% elif dept.pass_rate >= 50 %}text-yellow-600{% else %}text-red-500{% endif %}">{{ dept.pass_rate }}%</span>
+        </div>
+        <div class="text-lg font-black text-gray-900">{{ dept.avg_gpa|floatformat:2 }}</div>
+        <div class="text-xs text-gray-500">{{ dept.student_count }} records</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── AT-RISK STUDENTS TABLE ── -->
+  <div class="bg-white rounded-xl shadow-soft border border-gray-100 overflow-hidden card-lift anim-up d8">
+    <div class="px-5 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+          AI Risk Alerts
+          <span class="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-bold rounded-full pulse-red">{{ alert_count }}</span>
+        </h3>
+        <p class="text-xs text-gray-400 mt-0.5">Students flagged by ML engine · CA score below critical threshold</p>
+      </div>
+      <a href="{% url 'performance:risk_tracker' %}"
+        class="text-sm font-semibold text-primary-600 hover:text-primary-800 transition-colors flex items-center gap-1 whitespace-nowrap">
+        Full Risk Tracker
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-100">
+          <tr>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Student</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Dept</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">CA Score</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">GPA</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ML Prediction</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Risk</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          {% for alert in alerts %}
+          <tr class="hover:bg-red-50/30 transition-colors">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-red-400 to-red-600 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  {{ alert.student.first_name.0 }}{{ alert.student.last_name.0 }}
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900">{{ alert.student.first_name }} {{ alert.student.last_name }}</p>
+                  <p class="text-xs text-gray-400">{{ alert.student.student_id }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700">
+                {{ alert.student.department.code }}
+              </span>
+            </td>
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-red-600">{{ alert.ca_score|floatformat:1 }}</span>
+                <span class="text-xs text-gray-400">/40</span>
+                <div class="w-12 bg-gray-100 rounded-full h-1.5">
+                  <div class="bg-red-500 h-1.5 rounded-full" style="width: {% widthratio alert.ca_score 40 100 %}%"></div>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 font-semibold {% if alert.student_gpa < 2.0 %}text-red-600{% elif alert.student_gpa < 3.0 %}text-yellow-600{% else %}text-emerald-600{% endif %}">
+              {{ alert.student_gpa|floatformat:2 }}
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                Likely to Fail
+              </span>
+            </td>
+            <td class="px-5 py-3.5">
+              {% if alert.risk_level == 'Critical' %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800">
+                <span class="w-1.5 h-1.5 bg-red-500 rounded-full pulse-red"></span> Critical
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-800">
+                <span class="w-1.5 h-1.5 bg-orange-500 rounded-full"></span> High
+              </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="px-5 py-16 text-center">
+              <div class="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-7 h-7 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <p class="font-semibold text-gray-900">No at-risk students detected</p>
+              <p class="text-sm text-gray-400 mt-1">All students are performing above the critical threshold</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Academic Distribution Donut
+  const standingCtx = document.getElementById('standingChart');
+  if (standingCtx) {
+    new Chart(standingCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['First Class', 'Second Upper', 'Second Lower', 'At Risk'],
+        datasets: [{ data: [{{ first_class_count }}, {{ chart_data.1 }}, {{ chart_data.2 }}, {{ chart_data.3 }}], backgroundColor: ['#10b981','#3b82f6','#eab308','#ef4444'], borderWidth: 0, hoverOffset: 6 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, cutout: '72%',
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' records' } } }
+      }
+    });
+  }
+
+  // Department Performance Bar
+  const ctxBar = document.getElementById('deptChart');
+  if (ctxBar) {
+    const deptLabels = [{% for d in dept_stats %}'{{ d.code }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+    const deptGPAs  = [{% for d in dept_stats %}{{ d.avg_gpa|floatformat:2 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+    const passRates = [{% for d in dept_stats %}{{ d.pass_rate }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+    new Chart(ctxBar, {
+      type: 'bar',
+      data: {
+        labels: deptLabels,
+        datasets: [
+          {
+            label: 'Avg GPA',
+            data: deptGPAs,
+            backgroundColor: deptGPAs.map(v => v >= 3.5 ? '#10b981' : v >= 3.0 ? '#3b82f6' : v >= 2.5 ? '#f59e0b' : '#ef4444'),
+            borderRadius: 6, barThickness: 32, yAxisID: 'y'
+          },
+          {
+            label: 'Pass Rate %',
+            data: passRates,
+            type: 'line',
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99,102,241,.1)',
+            borderWidth: 2, pointRadius: 4, fill: false, tension: 0.4, yAxisID: 'y2'
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y:  { beginAtZero: true, max: 4.0, title: { display: true, text: 'GPA', font: { size: 11 } }, grid: { color: '#f3f4f6' } },
+          y2: { beginAtZero: true, max: 100, position: 'right', title: { display: true, text: 'Pass Rate %', font: { size: 11 } }, grid: { display: false } },
+          x:  { grid: { display: false } }
+        },
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 11 } } },
+          tooltip: { backgroundColor: 'rgba(0,0,0,.85)', padding: 12, cornerRadius: 8 }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

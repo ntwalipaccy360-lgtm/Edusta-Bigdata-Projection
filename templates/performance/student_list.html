@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% block title %}Students - EduStat{% endblock %}
+
+{% block extra_head %}
+<style>
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .anim-up { animation: fadeInUp .5s ease-out both; }
+  .d1{animation-delay:.05s;} .d2{animation-delay:.12s;} .d3{animation-delay:.19s;} .d4{animation-delay:.26s;}
+  .card-lift { transition: all .3s cubic-bezier(.4,0,.2,1); }
+  .card-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+  .row-hover:hover { background-color: rgba(99,102,241,.04); cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 anim-up d1">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Student Records</h1>
+        <p class="text-sm text-gray-500">Search, filter and view individual student data</p>
+      </div>
+    </div>
+    <a href="{% url 'performance:export_csv' %}?academic_year={{ selected_year }}&department={{ selected_dept }}&search={{ search }}"
+      class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+      </svg>
+      Export CSV
+    </a>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="bg-white rounded-xl border border-gray-100 shadow-soft p-4 anim-up d2">
+    <form method="GET" class="flex flex-col sm:flex-row gap-3">
+      <div class="flex-1 relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" name="search" value="{{ search }}" placeholder="Search by name or student ID..."
+          class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none">
+      </div>
+      <select name="academic_year"
+        class="px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 bg-white">
+        {% for year in available_years %}
+        <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+        {% endfor %}
+      </select>
+      <select name="department"
+        class="px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 bg-white">
+        <option value="">All Departments</option>
+        {% for dept in departments %}
+        <option value="{{ dept.id }}" {% if selected_dept == dept.id|stringformat:"s" %}selected{% endif %}>{{ dept.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="risk"
+        class="px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 bg-white">
+        <option value="" {% if not risk_filter %}selected{% endif %}>All Students</option>
+        <option value="at_risk" {% if risk_filter == 'at_risk' %}selected{% endif %}>At Risk Only</option>
+        <option value="pass" {% if risk_filter == 'pass' %}selected{% endif %}>Passing</option>
+        <option value="fail" {% if risk_filter == 'fail' %}selected{% endif %}>Failing</option>
+      </select>
+      <button type="submit"
+        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg transition-all">
+        Search
+      </button>
+      {% if search or selected_dept or risk_filter %}
+      <a href="{% url 'performance:student_list' %}?academic_year={{ selected_year }}"
+        class="px-4 py-2.5 border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold text-sm rounded-lg transition-all">
+        Clear
+      </a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="flex items-center justify-between anim-up d3">
+    <p class="text-sm text-gray-500">
+      Showing <span class="font-bold text-gray-900">{{ total_count }}</span> students
+      {% if search %}for "<span class="font-semibold">{{ search }}</span>"{% endif %}
+      · <span class="font-semibold text-indigo-600">{{ selected_year }}</span>
+    </p>
+  </div>
+
+  <!-- Students Table -->
+  <div class="bg-white rounded-xl shadow-soft border border-gray-100 overflow-hidden anim-up d4">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-100">
+          <tr>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Student</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Department</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg CA</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg Score</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">GPA</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ML Prediction</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Records</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          {% for row in student_rows %}
+          <tr class="row-hover transition-colors" onclick="window.location='{% url 'performance:student_profile' row.student.student_id %}?academic_year={{ selected_year }}'">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0
+                  {% if row.is_at_risk %}bg-gradient-to-br from-red-400 to-red-600
+                  {% elif row.avg_score >= 70 %}bg-gradient-to-br from-emerald-400 to-emerald-600
+                  {% else %}bg-gradient-to-br from-indigo-400 to-indigo-600{% endif %}">
+                  {{ row.student.first_name.0 }}{{ row.student.last_name.0 }}
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900">{{ row.student.first_name }} {{ row.student.last_name }}</p>
+                  <p class="text-xs text-gray-400">{{ row.student.student_id }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700">
+                {{ row.student.department.code }}
+              </span>
+            </td>
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-2">
+                <span class="font-semibold {% if row.avg_ca < 15 %}text-red-600{% elif row.avg_ca < 20 %}text-orange-500{% else %}text-gray-900{% endif %}">
+                  {{ row.avg_ca }}
+                </span>
+                <span class="text-xs text-gray-400">/40</span>
+              </div>
+            </td>
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-2">
+                <span class="font-semibold {% if row.avg_score < 50 %}text-red-600{% elif row.avg_score >= 70 %}text-emerald-600{% else %}text-yellow-600{% endif %}">
+                  {{ row.avg_score }}
+                </span>
+                <span class="text-xs text-gray-400">/100</span>
+                <div class="w-12 bg-gray-100 rounded-full h-1.5">
+                  <div class="h-1.5 rounded-full {% if row.avg_score < 50 %}bg-red-500{% elif row.avg_score >= 70 %}bg-emerald-500{% else %}bg-yellow-500{% endif %}"
+                    style="width: {{ row.avg_score }}%"></div>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 font-bold {% if row.gpa < 2.0 %}text-red-600{% elif row.gpa < 3.0 %}text-yellow-600{% else %}text-emerald-600{% endif %}">
+              {{ row.gpa }}
+            </td>
+            <td class="px-5 py-3.5">
+              {% if row.status == 'Critical' %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+                <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span> Critical Risk
+              </span>
+              {% elif row.status == 'High Risk' %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-800">
+                ⚠ High Risk
+              </span>
+              {% elif row.status == 'Fail' %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">
+                Likely to Fail
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                ✓ Likely to Pass
+              </span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-3.5 text-gray-500 text-center">
+              <span class="inline-flex items-center justify-center w-6 h-6 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold">
+                {{ row.record_count }}
+              </span>
+            </td>
+            <td class="px-5 py-3.5">
+              <a href="{% url 'performance:student_profile' row.student.student_id %}?academic_year={{ selected_year }}"
+                onclick="event.stopPropagation()"
+                class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+                View Profile
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="px-5 py-16 text-center">
+              <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+              <p class="font-semibold text-gray-600">No students found</p>
+              <p class="text-sm text-gray-400 mt-1">
+                {% if search %}Try a different search term{% else %}No records for {{ selected_year }}{% endif %}
+              </p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
