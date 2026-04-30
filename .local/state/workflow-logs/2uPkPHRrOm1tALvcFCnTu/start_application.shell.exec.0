@@ -1,0 +1,57 @@
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 29, 2026 - 17:14:40
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[29/Apr/2026 17:14:41] [32m"GET / HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:14:41] [32m"GET /performance/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:14:42] [m"GET /accounts/login/?next=/performance/ HTTP/1.1" 200 1190[0m
+[29/Apr/2026 17:14:42] [36m"GET /static/images/hero-1.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:14:42] [36m"GET /static/images/auca-logo.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:14:42] [36m"GET /static/dist/css/style.css HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:15:17] [m"GET /accounts/login/?next=/performance/ HTTP/1.1" 200 1153[0m
+[29/Apr/2026 17:15:18] [36m"GET /static/images/hero-1.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:15:18] [36m"GET /static/images/auca-logo.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:15:18] [36m"GET /static/dist/css/style.css HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:21:16] [32m"GET / HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:21:16] [32m"GET /performance/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:21:17] [m"GET /accounts/login/?next=/performance/ HTTP/1.1" 200 1215[0m
+[29/Apr/2026 17:21:17] [m"GET /static/dist/css/style.css HTTP/1.1" 200 65472[0m
+[29/Apr/2026 17:21:17] [m"GET /static/images/auca-logo.png HTTP/1.1" 200 37827[0m
+[29/Apr/2026 17:21:17] [m"GET /static/images/hero-1.png HTTP/1.1" 200 2231692[0m
+Not Found: /favicon.ico
+[29/Apr/2026 17:21:23] [33m"GET /favicon.ico HTTP/1.1" 404 1120[0m
+[29/Apr/2026 17:21:29] [32m"POST /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:21:29] [m"GET /performance/ HTTP/1.1" 200 11425[0m
+/home/runner/workspace/edustat/urls.py changed, reloading.
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 29, 2026 - 17:22:52
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[29/Apr/2026 17:22:55] [m"GET / HTTP/1.1" 200 8116[0m
+[29/Apr/2026 17:22:56] [36m"GET /static/images/hero-1.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:22:56] [m"GET /static/images/campus.png HTTP/1.1" 200 1391569[0m
+[29/Apr/2026 17:22:56] [m"GET /static/images/academics.png HTTP/1.1" 200 414986[0m
+[29/Apr/2026 17:23:18] [m"GET /performance/ HTTP/1.1" 200 11327[0m
+[29/Apr/2026 17:23:23] [32m"GET /accounts/logout/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:23:23] [m"GET /accounts/login/ HTTP/1.1" 200 4813[0m
+[29/Apr/2026 17:23:24] [m"GET /static/images/campus.png HTTP/1.1" 200 1391569[0m
+[29/Apr/2026 17:23:24] [36m"GET /static/images/auca-logo.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:23:24] [36m"GET /static/images/hero-1.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:23:39] [m"GET / HTTP/1.1" 200 8093[0m
+[29/Apr/2026 17:23:39] [m"GET / HTTP/1.1" 200 8087[0m
+[29/Apr/2026 17:23:45] [m"GET / HTTP/1.1" 200 8104[0m
+[29/Apr/2026 17:23:46] [m"GET /static/images/academics.png HTTP/1.1" 200 414986[0m
+[29/Apr/2026 17:24:08] [m"GET /accounts/login/ HTTP/1.1" 200 4767[0m
+[29/Apr/2026 17:24:16] [m"GET / HTTP/1.1" 200 8074[0m
+[29/Apr/2026 17:24:38] [m"GET /accounts/login/ HTTP/1.1" 200 4739[0m
+[29/Apr/2026 17:24:41] [m"GET / HTTP/1.1" 200 8060[0m

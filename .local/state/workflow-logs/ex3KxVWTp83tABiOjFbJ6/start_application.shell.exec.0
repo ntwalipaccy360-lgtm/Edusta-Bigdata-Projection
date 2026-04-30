@@ -1,0 +1,23 @@
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 29, 2026 - 17:43:11
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[29/Apr/2026 17:43:12] [m"GET / HTTP/1.1" 200 8267[0m
+[29/Apr/2026 17:43:13] [36m"GET /static/images/academics.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:43:14] [m"GET /static/images/hero-2.png HTTP/1.1" 200 746910[0m
+[29/Apr/2026 17:43:14] [m"GET / HTTP/1.1" 200 8266[0m
+[29/Apr/2026 17:43:14] [m"GET /static/images/academics.png HTTP/1.1" 200 414986[0m
+[29/Apr/2026 17:43:14] [m"GET /static/images/hero-2.png HTTP/1.1" 200 746910[0m
+[29/Apr/2026 17:43:22] [m"GET /accounts/login/ HTTP/1.1" 200 4799[0m
+[29/Apr/2026 17:46:11] [32m"GET /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:46:12] [m"GET /performance/ HTTP/1.1" 200 11552[0m
+[29/Apr/2026 17:46:20] [32m"GET /accounts/logout/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:46:20] [m"GET /accounts/login/ HTTP/1.1" 200 4798[0m
+[29/Apr/2026 17:46:48] [m"GET / HTTP/1.1" 200 8220[0m
+[29/Apr/2026 17:46:48] [36m"GET /static/images/academics.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:46:48] [36m"GET /static/images/hero-2.png HTTP/1.1" 304 0[0m

@@ -1,0 +1,87 @@
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 29, 2026 - 17:25:19
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[29/Apr/2026 17:25:19] [m"GET / HTTP/1.1" 200 8077[0m
+[29/Apr/2026 17:25:21] [36m"GET /static/images/hero-1.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:25:21] [36m"GET /static/images/campus.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:25:21] [36m"GET /static/images/academics.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:25:24] [m"GET / HTTP/1.1" 200 8142[0m
+[29/Apr/2026 17:25:24] [m"GET /static/images/campus.png HTTP/1.1" 200 1391569[0m
+[29/Apr/2026 17:25:24] [m"GET /static/images/hero-1.png HTTP/1.1" 200 2231692[0m
+[29/Apr/2026 17:25:29] [m"GET /static/images/academics.png HTTP/1.1" 200 414986[0m
+Not Found: /favicon.ico
+[29/Apr/2026 17:25:30] [33m"GET /favicon.ico HTTP/1.1" 404 1175[0m
+[29/Apr/2026 17:25:38] [m"GET /accounts/login/ HTTP/1.1" 200 4757[0m
+[29/Apr/2026 17:25:38] [m"GET /static/images/auca-logo.png HTTP/1.1" 200 37827[0m
+[29/Apr/2026 17:25:55] [32m"GET /performance/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:25:55] [m"GET /accounts/login/?next=/performance/ HTTP/1.1" 200 4735[0m
+[29/Apr/2026 17:25:57] [m"GET / HTTP/1.1" 200 8149[0m
+[29/Apr/2026 17:25:58] [m"GET /static/images/campus.png HTTP/1.1" 200 1391569[0m
+[29/Apr/2026 17:25:58] [m"GET /static/images/hero-1.png HTTP/1.1" 200 2231692[0m
+[29/Apr/2026 17:25:58] [m"GET /static/images/academics.png HTTP/1.1" 200 414986[0m
+Not Found: /favicon.ico
+[29/Apr/2026 17:26:04] [33m"GET /favicon.ico HTTP/1.1" 404 1209[0m
+/home/runner/workspace/edustat/urls.py changed, reloading.
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 29, 2026 - 17:26:19
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[29/Apr/2026 17:26:20] [m"GET / HTTP/1.1" 200 8149[0m
+/home/runner/workspace/edustat/urls.py changed, reloading.
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 29, 2026 - 17:26:34
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[29/Apr/2026 17:26:35] [m"GET / HTTP/1.1" 200 8114[0m
+[29/Apr/2026 17:26:44] [m"GET / HTTP/1.1" 200 8115[0m
+[29/Apr/2026 17:37:02] [m"GET /accounts/login/ HTTP/1.1" 200 4764[0m
+[29/Apr/2026 17:37:03] [36m"GET /static/images/campus.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:37:03] [36m"GET /static/images/auca-logo.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:37:03] [36m"GET /static/images/hero-1.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:37:07] [32m"POST /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:37:07] [m"GET /performance/ HTTP/1.1" 200 10505[0m
+[29/Apr/2026 17:37:19] [m"GET /accounts/users/ HTTP/1.1" 200 7544[0m
+[29/Apr/2026 17:37:30] [m"GET /accounts/users/create/ HTTP/1.1" 200 7525[0m
+[29/Apr/2026 17:37:47] [32m"POST /accounts/users/create/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:37:47] [m"GET /accounts/users/ HTTP/1.1" 200 7814[0m
+[29/Apr/2026 17:37:58] [32m"GET /accounts/logout/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:37:58] [m"GET /accounts/login/ HTTP/1.1" 200 4804[0m
+[29/Apr/2026 17:38:21] [32m"POST /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:38:21] [m"GET /performance/ HTTP/1.1" 200 10498[0m
+[29/Apr/2026 17:38:27] [m"GET /performance/risk-tracker/ HTTP/1.1" 200 7842[0m
+[29/Apr/2026 17:38:43] [m"GET / HTTP/1.1" 200 8130[0m
+[29/Apr/2026 17:38:44] [36m"GET /static/images/academics.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:38:48] [32m"GET /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:38:48] [m"GET /performance/ HTTP/1.1" 200 10345[0m
+[29/Apr/2026 17:39:03] [m"GET /performance/risk-tracker/ HTTP/1.1" 200 7908[0m
+[29/Apr/2026 17:39:11] [m"GET /performance/students/ HTTP/1.1" 200 7559[0m
+[29/Apr/2026 17:39:14] [m"GET /performance/graduation/ HTTP/1.1" 200 8571[0m
+[29/Apr/2026 17:39:21] [m"GET /performance/insights/ HTTP/1.1" 200 8152[0m
+[29/Apr/2026 17:39:22] [m"GET /performance/management/ HTTP/1.1" 200 9276[0m
+[29/Apr/2026 17:40:40] [32m"GET /accounts/logout/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:40:40] [m"GET /accounts/login/ HTTP/1.1" 200 4795[0m
+[29/Apr/2026 17:40:41] [36m"GET /static/images/auca-logo.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:40:41] [36m"GET /static/images/campus.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:40:41] [36m"GET /static/images/hero-1.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:40:46] [32m"POST /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:40:46] [m"GET /performance/ HTTP/1.1" 200 10550[0m
+[29/Apr/2026 17:41:13] [32m"GET /accounts/logout/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:41:13] [m"GET /accounts/login/ HTTP/1.1" 200 4781[0m
+[29/Apr/2026 17:41:25] [32m"POST /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:41:25] [m"GET /performance/ HTTP/1.1" 200 10427[0m

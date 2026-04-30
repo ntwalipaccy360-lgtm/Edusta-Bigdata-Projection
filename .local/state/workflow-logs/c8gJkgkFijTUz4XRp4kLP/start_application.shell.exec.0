@@ -1,0 +1,30 @@
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 29, 2026 - 18:22:52
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[29/Apr/2026 18:23:02] [m"GET / HTTP/1.1" 200 8241[0m
+[29/Apr/2026 18:23:03] [36m"GET /static/images/academics.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 18:23:04] [36m"GET /static/images/hero-2.png HTTP/1.1" 304 0[0m
+/home/runner/workspace/performance/views.py changed, reloading.
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 29, 2026 - 18:38:17
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[29/Apr/2026 18:38:19] [m"GET / HTTP/1.1" 200 8213[0m
+[29/Apr/2026 18:38:21] [36m"GET /static/images/academics.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 18:38:21] [36m"GET /static/images/hero-2.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 18:44:40] [m"GET / HTTP/1.1" 200 11289[0m
+[29/Apr/2026 18:44:42] [m"GET /static/images/academics.png HTTP/1.1" 200 414986[0m
+[29/Apr/2026 18:44:42] [m"GET /static/images/hero-2.png HTTP/1.1" 200 746910[0m
+Not Found: /favicon.ico
+[29/Apr/2026 18:44:48] [33m"GET /favicon.ico HTTP/1.1" 404 1135[0m

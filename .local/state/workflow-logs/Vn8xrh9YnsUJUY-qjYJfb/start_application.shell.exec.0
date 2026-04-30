@@ -1,0 +1,25 @@
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 29, 2026 - 17:14:10
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[29/Apr/2026 17:14:11] [32m"GET / HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:14:11] [32m"GET /performance/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:14:11] [m"GET /accounts/login/?next=/performance/ HTTP/1.1" 200 1159[0m
+[29/Apr/2026 17:14:12] [36m"GET /static/images/auca-logo.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:14:12] [36m"GET /static/images/hero-1.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:14:12] [36m"GET /static/dist/css/style.css HTTP/1.1" 304 0[0m
+[29/Apr/2026 17:14:12] [32m"GET / HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:14:12] [32m"GET /performance/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:14:12] [m"GET /accounts/login/?next=/performance/ HTTP/1.1" 200 1223[0m
+[29/Apr/2026 17:14:12] [m"GET /static/images/auca-logo.png HTTP/1.1" 200 37827[0m
+[29/Apr/2026 17:14:12] [m"GET /static/images/hero-1.png HTTP/1.1" 200 2231692[0m
+[29/Apr/2026 17:14:12] [m"GET /static/dist/css/style.css HTTP/1.1" 200 65472[0m
+Not Found: /favicon.ico
+[29/Apr/2026 17:14:12] [33m"GET /favicon.ico HTTP/1.1" 404 1163[0m
+[29/Apr/2026 17:14:30] [32m"POST /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 17:14:30] [m"GET /performance/ HTTP/1.1" 200 11377[0m

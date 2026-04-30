@@ -1,0 +1,18 @@
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 30, 2026 - 09:28:50
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[30/Apr/2026 09:28:52] [m"GET / HTTP/1.1" 200 11253[0m
+[30/Apr/2026 09:28:54] [36m"GET /static/images/academics.png HTTP/1.1" 304 0[0m
+[30/Apr/2026 09:28:54] [36m"GET /static/images/hero-2.png HTTP/1.1" 304 0[0m
+[30/Apr/2026 09:38:16] [m"GET /accounts/login/ HTTP/1.1" 200 4770[0m
+Not Found: /favicon.ico
+[30/Apr/2026 09:38:17] [33m"GET /favicon.ico HTTP/1.1" 404 1217[0m
+[30/Apr/2026 09:38:25] [m"GET / HTTP/1.1" 200 11239[0m
+[30/Apr/2026 09:38:26] [36m"GET /static/images/academics.png HTTP/1.1" 304 0[0m
+[30/Apr/2026 09:38:26] [36m"GET /static/images/hero-2.png HTTP/1.1" 304 0[0m

@@ -1,0 +1,11 @@
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 30, 2026 - 10:10:29
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[30/Apr/2026 10:10:31] [m"GET / HTTP/1.1" 200 11440[0m
+[30/Apr/2026 10:26:03] [m"GET / HTTP/1.1" 200 11465[0m

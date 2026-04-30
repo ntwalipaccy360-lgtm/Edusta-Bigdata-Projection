@@ -1,0 +1,66 @@
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 29, 2026 - 18:45:34
+Django version 5.1.1, using settings 'edustat.settings.development'
+Starting development server at http://0.0.0.0:5000/
+Quit the server with CONTROL-C.
+
+[29/Apr/2026 18:45:35] [m"GET / HTTP/1.1" 200 11312[0m
+[29/Apr/2026 18:45:36] [m"GET / HTTP/1.1" 200 11327[0m
+[29/Apr/2026 18:45:42] [m"GET /static/images/academics.png HTTP/1.1" 200 414986[0m
+[29/Apr/2026 18:45:42] [m"GET /static/images/hero-2.png HTTP/1.1" 200 746910[0m
+Not Found: /favicon.ico
+[29/Apr/2026 18:45:42] [33m"GET /favicon.ico HTTP/1.1" 404 1118[0m
+[29/Apr/2026 18:45:48] [m"GET / HTTP/1.1" 200 11331[0m
+[29/Apr/2026 18:45:58] [m"GET / HTTP/1.1" 200 11235[0m
+Not Found: /analytics/dashboard/
+[29/Apr/2026 18:46:00] [33m"GET /analytics/dashboard/ HTTP/1.1" 404 1124[0m
+Not Found: /performance/dashboard/
+[29/Apr/2026 18:46:08] [33m"GET /performance/dashboard/ HTTP/1.1" 404 1293[0m
+[29/Apr/2026 18:46:15] [32m"GET /performance/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 18:46:15] [m"GET /accounts/login/?next=/performance/ HTTP/1.1" 200 4813[0m
+[29/Apr/2026 18:46:26] [m"GET /accounts/login/ HTTP/1.1" 200 4752[0m
+[29/Apr/2026 18:48:18] [m"GET /accounts/login/ HTTP/1.1" 200 4818[0m
+Not Found: /favicon.ico
+[29/Apr/2026 18:48:22] [33m"GET /favicon.ico HTTP/1.1" 404 1142[0m
+[29/Apr/2026 18:49:01] [m"GET /accounts/login/ HTTP/1.1" 200 4795[0m
+[29/Apr/2026 18:49:15] [m"GET / HTTP/1.1" 200 11262[0m
+[29/Apr/2026 18:49:26] [m"GET /accounts/login/ HTTP/1.1" 200 4813[0m
+[29/Apr/2026 18:49:31] [32m"POST /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 18:49:32] [m"GET /performance/ HTTP/1.1" 200 9065[0m
+[29/Apr/2026 18:49:43] [m"GET / HTTP/1.1" 200 11331[0m
+[29/Apr/2026 18:50:37] [32m"GET /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 18:50:38] [m"GET /performance/ HTTP/1.1" 200 8888[0m
+[29/Apr/2026 18:50:45] [m"GET /performance/students/ HTTP/1.1" 200 18145[0m
+[29/Apr/2026 18:51:17] [m"GET /performance/students/?search=&academic_year=2023%2F2024&department=1&risk=at_risk HTTP/1.1" 200 8446[0m
+[29/Apr/2026 18:51:33] [m"GET /performance/students/2023-1099/?academic_year=2023/2024 HTTP/1.1" 200 9005[0m
+[29/Apr/2026 18:52:32] [m"GET /performance/students/?academic_year=2023/2024 HTTP/1.1" 200 18110[0m
+[29/Apr/2026 18:52:42] [m"GET /performance/students/2023-1036/?academic_year=2023/2024 HTTP/1.1" 200 8918[0m
+[29/Apr/2026 18:53:00] [m"GET /performance/graduation/ HTTP/1.1" 200 16532[0m
+[29/Apr/2026 18:53:10] [32m"GET /accounts/logout/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 18:53:10] [m"GET /accounts/login/ HTTP/1.1" 200 4831[0m
+[29/Apr/2026 18:53:16] [32m"POST /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 18:53:16] [m"GET /performance/ HTTP/1.1" 200 11919[0m
+[29/Apr/2026 18:53:28] [m"GET /performance/risk-tracker/ HTTP/1.1" 200 20244[0m
+[29/Apr/2026 18:53:35] [m"GET /accounts/users/ HTTP/1.1" 200 7812[0m
+[29/Apr/2026 18:53:40] [m"GET /accounts/users/create/ HTTP/1.1" 200 7747[0m
+[29/Apr/2026 18:54:16] [m"GET /accounts/users/ HTTP/1.1" 200 7892[0m
+[29/Apr/2026 18:54:27] [32m"GET /accounts/logout/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 18:54:28] [m"GET /accounts/login/ HTTP/1.1" 200 4844[0m
+[29/Apr/2026 18:54:32] [32m"POST /accounts/login/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 18:54:33] [m"GET /performance/ HTTP/1.1" 200 9019[0m
+[29/Apr/2026 18:54:36] [m"GET /performance/management/ HTTP/1.1" 200 9501[0m
+[29/Apr/2026 18:54:46] [32m"GET /accounts/logout/ HTTP/1.1" 302 0[0m
+[29/Apr/2026 18:54:46] [m"GET /accounts/login/ HTTP/1.1" 200 4828[0m
+[29/Apr/2026 18:54:52] [m"GET / HTTP/1.1" 200 11284[0m
+[29/Apr/2026 18:54:52] [36m"GET /static/images/academics.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 18:54:52] [36m"GET /static/images/hero-2.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 18:54:59] [m"GET /accounts/login/ HTTP/1.1" 200 4776[0m
+[29/Apr/2026 18:55:09] [m"GET /accounts/login/ HTTP/1.1" 200 4816[0m
+[29/Apr/2026 18:55:30] [m"GET /accounts/login/ HTTP/1.1" 200 4767[0m
+[29/Apr/2026 18:55:46] [m"GET / HTTP/1.1" 200 11289[0m
+[29/Apr/2026 19:55:03] [m"GET / HTTP/1.1" 200 11302[0m
+[29/Apr/2026 19:55:04] [36m"GET /static/images/hero-2.png HTTP/1.1" 304 0[0m
+[29/Apr/2026 19:55:04] [36m"GET /static/images/academics.png HTTP/1.1" 304 0[0m
