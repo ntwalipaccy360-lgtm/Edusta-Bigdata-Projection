@@ -3,7 +3,7 @@ from .base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com', '.replit.app', '.repl.co']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
 
 DATABASES = {
     'default': dj_database_url.config(
@@ -13,6 +13,7 @@ DATABASES = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
     'https://*.replit.app',
     'https://*.repl.co',
 ]
