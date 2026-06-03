@@ -7,261 +7,473 @@
   <title>EduStat Student Kiosk — Rwanda Ministry of Education</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; }
-    body { background: #0a0f2e; min-height: 100vh; }
-    .glass { background: rgba(255,255,255,0.06); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
-    .rw-bar { height:4px; background: linear-gradient(90deg, #20A0D0 0%, #FAD201 50%, #006D33 100%); }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
-    .fade-up { animation: fadeUp 0.5s ease-out both; }
-    .d1{animation-delay:.05s;} .d2{animation-delay:.12s;} .d3{animation-delay:.2s;} .d4{animation-delay:.28s;}
-    .pass-badge { background: linear-gradient(135deg,#006D33,#009944); }
-    .fail-badge { background: linear-gradient(135deg,#dc2626,#991b1b); }
-    .borderline-badge { background: linear-gradient(135deg,#b45309,#d97706); }
-    #timerBar { transition: width 1s linear; }
+
+    /* ── Video BG ── */
+    .video-bg-wrap {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden;
+    }
+    .video-bg-wrap video {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .video-overlay {
+      position: fixed; inset: 0; z-index: 1;
+      background: linear-gradient(
+        135deg,
+        rgba(7,11,40,0.88) 0%,
+        rgba(0,29,80,0.80) 40%,
+        rgba(0,50,20,0.70) 100%
+      );
+    }
+    .rw-bar { height: 5px; background: linear-gradient(90deg, #20A0D0 0%, #FAD201 50%, #006D33 100%); }
+
+    /* ── Glass card ── */
+    .glass {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.13);
+    }
+    .glass-dark {
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* ── TAP ring animation ── */
+    @keyframes ring-pulse {
+      0%   { transform: scale(1);   opacity: 0.7; }
+      70%  { transform: scale(1.6); opacity: 0;   }
+      100% { transform: scale(1.6); opacity: 0;   }
+    }
+    @keyframes ring2-pulse {
+      0%   { transform: scale(1);   opacity: 0.5; }
+      70%  { transform: scale(2.0); opacity: 0;   }
+      100% { transform: scale(2.0); opacity: 0;   }
+    }
+    .tap-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 2px solid rgba(32,160,208,0.9);
+      animation: ring-pulse 2s ease-out infinite;
+    }
+    .tap-ring-2 {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 2px solid rgba(32,160,208,0.5);
+      animation: ring2-pulse 2s ease-out 0.4s infinite;
+    }
+    @keyframes scan-line {
+      0%   { transform: translateY(0); opacity: 0.9; }
+      50%  { transform: translateY(100px); opacity: 0.5; }
+      100% { transform: translateY(0); opacity: 0.9; }
+    }
+    .scan-line {
+      animation: scan-line 2.5s ease-in-out infinite;
+      position: absolute; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #20A0D0, #FAD201, #006D33, transparent);
+      top: 0;
+    }
+
+    /* ── NFC waves ── */
+    @keyframes nfc-wave {
+      0%   { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+    .nfc-wave { animation: nfc-wave 1.8s ease-out infinite; }
+    .nfc-wave-2 { animation: nfc-wave 1.8s ease-out 0.6s infinite; }
+    .nfc-wave-3 { animation: nfc-wave 1.8s ease-out 1.2s infinite; }
+
+    /* ── Misc ── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+    .fade-up { animation: fadeUp 0.6s ease-out both; }
+    .d1{animation-delay:.05s;} .d2{animation-delay:.15s;} .d3{animation-delay:.25s;} .d4{animation-delay:.35s;}
+
+    .pass-badge  { background: linear-gradient(135deg,#006D33,#00a84a); }
+    .fail-badge  { background: linear-gradient(135deg,#dc2626,#991b1b); }
+    .bdln-badge  { background: linear-gradient(135deg,#b45309,#d97706); }
+    .gray-badge  { background: rgba(255,255,255,0.1); }
+
+    /* blink when card detected */
+    @keyframes flash { 0%,100%{background:rgba(32,160,208,0.1);} 50%{background:rgba(32,160,208,0.35);} }
+    .card-flash { animation: flash 0.4s ease; }
+
+    input::placeholder { color: rgba(255,255,255,0.25); letter-spacing: .05em; }
+
+    @keyframes gradient-shift {
+      0%  { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100%{ background-position: 0% 50%; }
+    }
+    .title-gradient {
+      background: linear-gradient(120deg, #ffffff, #20A0D0, #FAD201, #ffffff);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradient-shift 4s ease infinite;
+    }
   </style>
 </head>
-<body>
+<body style="background:#07080f; min-height:100vh; overflow-x:hidden;">
 
-  <!-- Rwanda flag bar -->
+  <!-- ── VIDEO BACKGROUND ── -->
+  <div class="video-bg-wrap">
+    <video autoplay muted loop playsinline id="bgVideo">
+      <source src="https://assets.mixkit.co/videos/preview/mixkit-teacher-teaching-students-in-a-classroom-4837-large.mp4" type="video/mp4">
+      <source src="https://assets.mixkit.co/videos/preview/mixkit-students-studying-in-a-library-4843-large.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="video-overlay"></div>
+
+  <!-- ── RWANDA FLAG BAR ── -->
   <div class="rw-bar fixed top-0 left-0 right-0 z-50"></div>
 
-  <!-- Header -->
-  <header class="pt-1 px-6 py-4 flex items-center justify-between max-w-5xl mx-auto">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-gradient-to-br from-[#003DA5] to-[#001f6e] rounded-xl flex items-center justify-center shadow-lg">
-        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-        </svg>
-      </div>
-      <div>
-        <div class="text-white font-black text-lg tracking-tight">EDU<span class="text-blue-400">STAT</span> <span class="text-[#FAD201]">🇷🇼</span></div>
-        <div class="text-white/30 text-[10px] uppercase tracking-widest">Rwanda Ministry of Education · Student Kiosk</div>
-      </div>
-    </div>
-    <div class="text-white/30 text-xs hidden sm:block">Academic Self-Service Terminal</div>
-  </header>
+  <!-- ── MAIN CONTENT ── -->
+  <div class="relative z-10 min-h-screen flex flex-col" style="padding-top:5px;">
 
-  <main class="max-w-5xl mx-auto px-6 pb-12">
+    <!-- Header -->
+    <header class="px-6 py-4 flex items-center justify-between fade-up d1">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-gradient-to-br from-[#003DA5] to-[#0060ff] rounded-2xl flex items-center justify-center shadow-xl shadow-blue-900/40">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="text-white font-black text-xl tracking-tight">EDU<span class="text-[#20A0D0]">STAT</span> <span class="text-[#FAD201]">🇷🇼</span></div>
+          <div class="text-white/30 text-[10px] uppercase tracking-widest -mt-0.5">
+            {% if school_ctx %}{{ school_ctx.name }} · {% endif %}Rwanda Ministry of Education
+          </div>
+        </div>
+      </div>
+      <div class="hidden sm:flex items-center gap-4">
+        <div class="flex items-center gap-2 px-3 py-1.5 glass rounded-full">
+          <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+          <span class="text-white/60 text-xs font-medium">Kiosk Online</span>
+        </div>
+        <a href="{% url 'accounts:login' %}" class="text-white/30 hover:text-white/70 text-xs transition-colors">Staff Login →</a>
+      </div>
+    </header>
 
+    <!-- ──────── LOOKUP FORM ──────── -->
     {% if not student %}
-    <!-- ══ LOOKUP FORM ══ -->
-    <div class="flex flex-col items-center justify-center min-h-[70vh] fade-up d1">
+    <div class="flex-1 flex items-center justify-center px-6 py-8">
+      <div class="w-full max-w-4xl fade-up d2">
 
-      <div class="w-full max-w-md">
-        <!-- Icon -->
-        <div class="flex justify-center mb-6">
-          <div class="w-20 h-20 bg-gradient-to-br from-[#003DA5] to-[#20A0D0] rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-900/40">
-            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
-            </svg>
+        <!-- Title -->
+        <div class="text-center mb-10">
+          <h1 class="text-4xl sm:text-5xl font-black mb-3 title-gradient">Check Your Academic Status</h1>
+          <p class="text-white/45 text-base">Tap your student card on the reader, scan the barcode, or type your Student ID below</p>
+        </div>
+
+        <!-- Two-column layout: TAP zone + Form -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- ── LEFT: TAP & GO Zone ── -->
+          <div class="glass rounded-3xl p-8 flex flex-col items-center justify-center text-center gap-6 fade-up d2">
+            <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Tap &amp; Go</p>
+
+            <!-- NFC Animation -->
+            <div class="relative w-40 h-40 flex items-center justify-center" id="tapZone">
+              <!-- Outer rings -->
+              <div class="absolute inset-0 rounded-full border-2 border-[#20A0D0]/20 nfc-wave"></div>
+              <div class="absolute inset-0 rounded-full border-2 border-[#20A0D0]/20 nfc-wave-2"></div>
+              <div class="absolute inset-0 rounded-full border-2 border-[#20A0D0]/20 nfc-wave-3"></div>
+              <!-- Tap rings -->
+              <div class="tap-ring"></div>
+              <div class="tap-ring-2"></div>
+              <!-- Center icon -->
+              <div class="relative z-10 w-20 h-20 bg-gradient-to-br from-[#003DA5] to-[#20A0D0] rounded-full flex items-center justify-center shadow-2xl shadow-blue-900/50" id="tapIcon">
+                <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
+                </svg>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-white font-bold text-lg">Tap Your Student Card</p>
+              <p class="text-white/35 text-sm mt-1">Place your NFC/RFID card on the reader</p>
+              <p class="text-white/25 text-xs mt-3">Card readers auto-submit instantly</p>
+            </div>
+
+            <!-- Scan indicator bar -->
+            <div class="w-full bg-white/5 rounded-full h-1.5 overflow-hidden relative">
+              <div class="scan-line"></div>
+              <div class="h-full bg-gradient-to-r from-[#20A0D0] to-[#006D33] rounded-full w-1/3 mx-auto opacity-60"></div>
+            </div>
+
+            <div class="flex items-center gap-3 text-white/20 text-xs">
+              <span>USB Card Reader</span>
+              <span>·</span>
+              <span>NFC</span>
+              <span>·</span>
+              <span>Barcode</span>
+            </div>
+          </div>
+
+          <!-- ── RIGHT: Manual Input Form ── -->
+          <div class="glass rounded-3xl p-8 flex flex-col gap-5 fade-up d3">
+            <div>
+              <p class="text-white/40 text-xs font-bold uppercase tracking-widest mb-1">Manual Entry</p>
+              <h2 class="text-xl font-bold text-white">Enter Student ID</h2>
+              <p class="text-white/35 text-sm mt-1">Type your ID or let the scanner fill it in automatically</p>
+            </div>
+
+            {% if error %}
+            <div class="p-4 bg-red-500/15 border border-red-500/25 rounded-2xl flex items-start gap-3">
+              <div class="w-8 h-8 bg-red-500/20 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-red-300 text-sm">{{ error }}</p>
+            </div>
+            {% endif %}
+
+            <form method="post" id="kioskForm" class="flex flex-col gap-4">
+              {% csrf_token %}
+              <input type="hidden" name="school_code" value="{{ school_code }}">
+
+              <div>
+                <label class="block text-white/50 text-xs font-bold uppercase tracking-widest mb-2">Student ID / Card Number</label>
+                <input
+                  type="text"
+                  name="student_id"
+                  id="studentIdInput"
+                  autofocus
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="e.g. GS25IT047"
+                  class="w-full bg-white/8 border border-white/15 rounded-2xl px-5 py-4 text-white text-xl font-bold focus:outline-none focus:border-[#20A0D0]/70 focus:bg-white/12 transition-all tracking-widest uppercase text-center"
+                  {% if error %}value="{{ request.POST.student_id|default:'' }}"{% endif %}
+                />
+                <p class="text-white/20 text-xs text-center mt-2">Card readers auto-fill and submit this field</p>
+              </div>
+
+              <button type="submit"
+                class="w-full py-4 bg-gradient-to-r from-[#003DA5] to-[#0060FF] text-white font-black text-lg rounded-2xl hover:shadow-lg hover:shadow-blue-900/40 hover:-translate-y-0.5 transition-all">
+                View My Results
+              </button>
+            </form>
+
+            <!-- Stats strip -->
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-white/8">
+              <div class="text-center">
+                <p class="text-white/60 text-lg font-black">3M+</p>
+                <p class="text-white/25 text-xs">Students</p>
+              </div>
+              <div class="text-center">
+                <p class="text-white/60 text-lg font-black">3,456</p>
+                <p class="text-white/25 text-xs">Schools</p>
+              </div>
+              <div class="text-center">
+                <p class="text-white/60 text-lg font-black">30</p>
+                <p class="text-white/25 text-xs">Districts</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <h1 class="text-3xl font-black text-white text-center mb-2">Check Your Academic Status</h1>
-        <p class="text-white/40 text-center text-sm mb-8">Tap your student card or type your Student ID below to view your grades and performance.</p>
+        <!-- Rwanda Education Statement -->
+        <div class="mt-8 text-center fade-up d4">
+          <p class="text-white/20 text-xs">
+            Rwanda Vision 2050 · Every student, every result, instantly accessible · 
+            <a href="{% url 'accounts:login' %}" class="text-[#20A0D0]/60 hover:text-[#20A0D0] transition-colors">Staff Portal</a>
+          </p>
+        </div>
+      </div>
+    </div>
 
-        {% if error %}
-        <div class="mb-5 p-4 bg-red-500/15 border border-red-500/30 rounded-xl flex items-center gap-3">
-          <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <p class="text-red-300 text-sm font-medium">{{ error }}</p>
+    <!-- ──────── RESULT CARD ──────── -->
+    {% else %}
+    <!-- Auto-clear timer bar -->
+    <div class="fixed top-1 left-0 right-0 z-50 h-1 bg-white/5">
+      <div id="timerBar" class="h-full bg-gradient-to-r from-[#20A0D0] to-[#FAD201] transition-none" style="width:100%"></div>
+    </div>
+
+    <div class="flex-1 px-4 sm:px-6 py-4 overflow-auto">
+      <div class="max-w-4xl mx-auto space-y-4">
+
+        <!-- Student card -->
+        <div class="glass rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5 fade-up d1">
+          <!-- Avatar -->
+          <div class="w-16 h-16 bg-gradient-to-br from-[#003DA5] to-[#20A0D0] rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-xl flex-shrink-0">
+            {{ student.first_name.0 }}{{ student.last_name.0 }}
+          </div>
+          <div class="flex-1">
+            <p class="text-white/40 text-xs font-bold uppercase tracking-widest mb-0.5">Verified Student</p>
+            <h2 class="text-2xl font-black text-white">{{ student.first_name }} {{ student.last_name }}</h2>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <span class="px-3 py-1 glass-dark rounded-full text-xs text-white/60 font-mono font-bold">{{ student.student_id }}</span>
+              <span class="px-3 py-1 glass-dark rounded-full text-xs text-white/60">{{ student.department.name }}</span>
+              <span class="px-3 py-1 glass-dark rounded-full text-xs text-white/60">{{ selected_year }}</span>
+            </div>
+          </div>
+          <!-- Prediction badge -->
+          <div class="flex-shrink-0 text-center rounded-2xl px-6 py-4
+            {% if pred_color == 'green' %}pass-badge
+            {% elif pred_color == 'red' %}fail-badge
+            {% elif pred_color == 'yellow' %}bdln-badge
+            {% else %}gray-badge{% endif %}">
+            <p class="text-white/70 text-xs font-semibold uppercase tracking-wider">Prediction</p>
+            <p class="text-white font-black text-xl mt-0.5">{{ prediction }}</p>
+          </div>
+        </div>
+
+        <!-- KPI row -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 fade-up d2">
+          <div class="glass rounded-2xl p-5 text-center">
+            <p class="text-white/35 text-xs font-bold uppercase tracking-wide mb-1">GPA</p>
+            <p class="text-4xl font-black text-white">{{ gpa }}</p>
+            <p class="text-white/30 text-xs mt-1">/ 4.0</p>
+          </div>
+          <div class="glass rounded-2xl p-5 text-center">
+            <p class="text-white/35 text-xs font-bold uppercase tracking-wide mb-1">Avg Score</p>
+            <p class="text-4xl font-black {% if avg_total >= 70 %}text-[#00d46a]{% elif avg_total >= 50 %}text-[#FAD201]{% else %}text-red-400{% endif %}">{{ avg_total }}</p>
+            <p class="text-white/30 text-xs mt-1">/ 100</p>
+          </div>
+          <div class="glass rounded-2xl p-5 text-center">
+            <p class="text-white/35 text-xs font-bold uppercase tracking-wide mb-1">CA Average</p>
+            <p class="text-4xl font-black {% if avg_ca >= 25 %}text-[#00d46a]{% elif avg_ca >= 20 %}text-[#FAD201]{% else %}text-red-400{% endif %}">{{ avg_ca }}</p>
+            <p class="text-white/30 text-xs mt-1">/ 30</p>
+          </div>
+          <div class="glass rounded-2xl p-5 text-center">
+            <p class="text-white/35 text-xs font-bold uppercase tracking-wide mb-1">Attendance</p>
+            <p class="text-4xl font-black {% if avg_att >= 75 %}text-[#00d46a]{% elif avg_att >= 60 %}text-[#FAD201]{% else %}text-red-400{% endif %}">{{ avg_att }}%</p>
+            <p class="text-white/30 text-xs mt-1">min 75%</p>
+          </div>
+        </div>
+
+        <!-- Course table -->
+        {% if course_data %}
+        <div class="glass rounded-3xl overflow-hidden fade-up d3">
+          <div class="px-6 py-4 border-b border-white/8 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white">Course Breakdown</h3>
+            <span class="text-white/30 text-xs">{{ selected_year }}</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="border-b border-white/8">
+                <tr>
+                  <th class="text-left px-5 py-3 text-xs font-bold text-white/35 uppercase tracking-wider">Course</th>
+                  <th class="text-center px-4 py-3 text-xs font-bold text-white/35 uppercase">CA</th>
+                  <th class="text-center px-4 py-3 text-xs font-bold text-white/35 uppercase">Final</th>
+                  <th class="text-center px-4 py-3 text-xs font-bold text-white/35 uppercase">Total</th>
+                  <th class="text-center px-4 py-3 text-xs font-bold text-white/35 uppercase">Attend.</th>
+                  <th class="text-center px-4 py-3 text-xs font-bold text-white/35 uppercase">Result</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5">
+                {% for c in course_data %}
+                <tr class="hover:bg-white/4 transition-colors">
+                  <td class="px-5 py-3 font-mono text-sm text-white/80 font-bold">{{ c.course }}</td>
+                  <td class="px-4 py-3 text-center text-white/65 text-sm">{{ c.ca }}</td>
+                  <td class="px-4 py-3 text-center text-white/65 text-sm">{{ c.final }}</td>
+                  <td class="px-4 py-3 text-center font-bold text-sm
+                    {% if c.total >= 70 %}text-[#00d46a]{% elif c.total >= 50 %}text-[#FAD201]{% else %}text-red-400{% endif %}">
+                    {{ c.total }}
+                  </td>
+                  <td class="px-4 py-3 text-center text-white/60 text-sm">{{ c.attendance }}%</td>
+                  <td class="px-4 py-3 text-center">
+                    {% if c.status == 'Pass' %}
+                    <span class="px-3 py-1 bg-[#006D33]/30 text-green-300 text-xs font-bold rounded-full border border-green-500/20">PASS</span>
+                    {% else %}
+                    <span class="px-3 py-1 bg-red-500/25 text-red-300 text-xs font-bold rounded-full border border-red-500/20">FAIL</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
         {% endif %}
 
-        <form method="post" class="space-y-4">
-          {% csrf_token %}
-          <div>
-            <label class="block text-xs font-bold text-white/50 uppercase tracking-widest mb-2">Student ID / Card Number</label>
-            <input
-              type="text"
-              name="student_id"
-              id="studentIdInput"
-              placeholder="e.g. STU-2024-001"
-              autofocus
-              autocomplete="off"
-              class="w-full bg-white/8 border border-white/15 rounded-2xl px-5 py-4 text-white text-lg font-bold placeholder-white/20 focus:outline-none focus:border-[#20A0D0]/60 focus:bg-white/12 transition-all text-center tracking-widest uppercase"
-              {% if error %}value="{{ request.POST.student_id }}"{% endif %}
-            />
-          </div>
-          <button type="submit"
-            class="w-full py-4 bg-gradient-to-r from-[#003DA5] to-[#0060FF] text-white font-black text-lg rounded-2xl hover:shadow-lg hover:shadow-blue-900/40 hover:-translate-y-0.5 transition-all">
-            View My Results
-          </button>
-        </form>
-
-        <div class="mt-8 flex items-center gap-4">
-          <div class="flex-1 h-px bg-white/10"></div>
-          <span class="text-white/20 text-xs uppercase tracking-widest">or</span>
-          <div class="flex-1 h-px bg-white/10"></div>
-        </div>
-        <p class="text-center mt-4 text-white/25 text-xs">
-          Staff login: <a href="{% url 'accounts:login' %}" class="text-[#20A0D0] hover:underline">Sign in here</a>
-        </p>
-      </div>
-    </div>
-
-    {% else %}
-    <!-- ══ STUDENT RESULT CARD ══ -->
-
-    <!-- Auto-clear timer bar -->
-    <div class="fixed top-1 left-0 right-0 z-40 h-1 bg-white/10 overflow-hidden">
-      <div id="timerBar" class="h-full bg-[#FAD201]" style="width:100%"></div>
-    </div>
-
-    <div class="pt-2 space-y-5">
-
-      <!-- Student identity card -->
-      <div class="glass rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center gap-5 fade-up d1">
-        <div class="w-16 h-16 bg-gradient-to-br from-[#003DA5] to-[#20A0D0] rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-xl flex-shrink-0">
-          {{ student.first_name.0 }}{{ student.last_name.0 }}
-        </div>
-        <div class="flex-1">
-          <p class="text-white/40 text-xs uppercase tracking-widest mb-1">Student Profile</p>
-          <h2 class="text-2xl font-black text-white">{{ student.first_name }} {{ student.last_name }}</h2>
-          <div class="flex flex-wrap gap-3 mt-2">
-            <span class="px-3 py-1 bg-white/8 rounded-full text-xs text-white/60 font-mono">{{ student.student_id }}</span>
-            <span class="px-3 py-1 bg-white/8 rounded-full text-xs text-white/60">{{ student.department.name }}</span>
-            <span class="px-3 py-1 bg-white/8 rounded-full text-xs text-white/60">{{ selected_year }}</span>
+        <!-- Actions + Timer -->
+        <div class="flex flex-col sm:flex-row gap-3 fade-up d4">
+          <form method="post" class="flex-1">
+            {% csrf_token %}
+            <input type="hidden" name="student_id" value="">
+            <input type="hidden" name="school_code" value="{{ school_code }}">
+            <button type="submit"
+              class="w-full py-3.5 glass hover:bg-white/15 text-white font-bold rounded-2xl transition-all text-sm border border-white/10">
+              ← Search Another Student
+            </button>
+          </form>
+          <div class="flex items-center justify-center sm:w-52 text-center">
+            <p class="text-white/25 text-xs">Screen clears in <strong id="countdown" class="text-white/50">30</strong>s</p>
           </div>
         </div>
-        <!-- Prediction badge -->
-        <div class="flex-shrink-0">
-          {% if pred_color == 'green' %}
-          <div class="pass-badge rounded-2xl px-5 py-3 text-center text-white shadow-lg">
-            <p class="text-xs font-semibold opacity-80">Prediction</p>
-            <p class="text-lg font-black">{{ prediction }}</p>
-          </div>
-          {% elif pred_color == 'red' %}
-          <div class="fail-badge rounded-2xl px-5 py-3 text-center text-white shadow-lg">
-            <p class="text-xs font-semibold opacity-80">Prediction</p>
-            <p class="text-lg font-black">{{ prediction }}</p>
-          </div>
-          {% elif pred_color == 'yellow' %}
-          <div class="borderline-badge rounded-2xl px-5 py-3 text-center text-white shadow-lg">
-            <p class="text-xs font-semibold opacity-80">Prediction</p>
-            <p class="text-lg font-black">{{ prediction }}</p>
-          </div>
-          {% else %}
-          <div class="bg-white/10 rounded-2xl px-5 py-3 text-center text-white">
-            <p class="text-xs font-semibold opacity-80">Prediction</p>
-            <p class="text-lg font-black">{{ prediction }}</p>
-          </div>
-          {% endif %}
-        </div>
-      </div>
 
-      <!-- KPI row -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 fade-up d2">
-        <div class="glass rounded-xl p-4 text-center">
-          <p class="text-white/40 text-xs uppercase tracking-wide mb-1">GPA</p>
-          <p class="text-3xl font-black text-white">{{ gpa }}</p>
-          <p class="text-white/30 text-xs mt-1">out of 4.0</p>
-        </div>
-        <div class="glass rounded-xl p-4 text-center">
-          <p class="text-white/40 text-xs uppercase tracking-wide mb-1">Avg Score</p>
-          <p class="text-3xl font-black {% if avg_total >= 70 %}text-[#006D33]{% elif avg_total >= 50 %}text-[#FAD201]{% else %}text-red-400{% endif %}">{{ avg_total }}</p>
-          <p class="text-white/30 text-xs mt-1">out of 100</p>
-        </div>
-        <div class="glass rounded-xl p-4 text-center">
-          <p class="text-white/40 text-xs uppercase tracking-wide mb-1">CA Average</p>
-          <p class="text-3xl font-black {% if avg_ca >= 25 %}text-[#006D33]{% elif avg_ca >= 20 %}text-[#FAD201]{% else %}text-red-400{% endif %}">{{ avg_ca }}</p>
-          <p class="text-white/30 text-xs mt-1">out of 30</p>
-        </div>
-        <div class="glass rounded-xl p-4 text-center">
-          <p class="text-white/40 text-xs uppercase tracking-wide mb-1">Attendance</p>
-          <p class="text-3xl font-black {% if avg_att >= 75 %}text-[#006D33]{% elif avg_att >= 60 %}text-[#FAD201]{% else %}text-red-400{% endif %}">{{ avg_att }}%</p>
-          <p class="text-white/30 text-xs mt-1">required: 75%</p>
-        </div>
-      </div>
-
-      <!-- Course breakdown -->
-      {% if course_data %}
-      <div class="glass rounded-2xl overflow-hidden fade-up d3">
-        <div class="px-5 py-3 border-b border-white/8">
-          <h3 class="text-sm font-bold text-white">Course Breakdown — {{ selected_year }}</h3>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="border-b border-white/8">
-              <tr>
-                <th class="text-left px-5 py-3 text-xs font-semibold text-white/40 uppercase">Course</th>
-                <th class="text-center px-4 py-3 text-xs font-semibold text-white/40 uppercase">CA</th>
-                <th class="text-center px-4 py-3 text-xs font-semibold text-white/40 uppercase">Final</th>
-                <th class="text-center px-4 py-3 text-xs font-semibold text-white/40 uppercase">Total</th>
-                <th class="text-center px-4 py-3 text-xs font-semibold text-white/40 uppercase">Attendance</th>
-                <th class="text-center px-4 py-3 text-xs font-semibold text-white/40 uppercase">Result</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/5">
-              {% for c in course_data %}
-              <tr class="hover:bg-white/4 transition-colors">
-                <td class="px-5 py-3 font-mono text-white/80 text-xs font-bold">{{ c.course }}</td>
-                <td class="px-4 py-3 text-center text-white/70 text-sm">{{ c.ca }}</td>
-                <td class="px-4 py-3 text-center text-white/70 text-sm">{{ c.final }}</td>
-                <td class="px-4 py-3 text-center font-bold {% if c.total >= 70 %}text-[#006D33]{% elif c.total >= 50 %}text-[#FAD201]{% else %}text-red-400{% endif %}">{{ c.total }}</td>
-                <td class="px-4 py-3 text-center text-white/60 text-sm">{{ c.attendance }}%</td>
-                <td class="px-4 py-3 text-center">
-                  {% if c.status == 'Pass' %}
-                  <span class="px-2.5 py-0.5 bg-[#006D33]/30 text-green-300 text-xs font-bold rounded-full">PASS</span>
-                  {% else %}
-                  <span class="px-2.5 py-0.5 bg-red-500/30 text-red-300 text-xs font-bold rounded-full">FAIL</span>
-                  {% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- Bottom actions -->
-      <div class="flex flex-col sm:flex-row gap-3 fade-up d4">
-        <form method="post" class="flex-1">
-          {% csrf_token %}
-          <input type="hidden" name="student_id" value=""/>
-          <button type="submit" onclick="this.closest('form').querySelector('input').value=''"
-            class="w-full py-3.5 bg-white/10 hover:bg-white/15 text-white font-bold rounded-xl transition-all text-sm border border-white/10">
-            ← Search Another Student
-          </button>
-        </form>
-        <div class="text-center text-white/25 text-xs flex items-center justify-center sm:w-48">
-          <span id="timerText">Screen clears in <strong id="countdown">30</strong>s</span>
-        </div>
       </div>
     </div>
     {% endif %}
 
-  </main>
+    <!-- Footer -->
+    <footer class="relative z-10 py-4 px-6 text-center border-t border-white/5">
+      <p class="text-white/15 text-xs">EduStat · Rwanda Ministry of Education · Academic self-service terminal · Data is private and confidential</p>
+    </footer>
+  </div>
 
-  <!-- Footer -->
-  <footer class="border-t border-white/5 py-6 px-6 text-center">
-    <p class="text-white/20 text-xs">EduStat · Rwanda Ministry of Education · This terminal shows your personal academic data only.</p>
-    <p class="text-white/15 text-xs mt-1">Data is confidential. Please clear the screen after viewing by pressing the button above.</p>
-  </footer>
-
-  {% if student %}
   <script>
-    let seconds = 30;
+    // ── Auto-submit on Enter (keyboard wedge card readers) ──
+    const input = document.getElementById('studentIdInput');
+    if (input) {
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (this.value.trim().length > 2) {
+            // Flash effect
+            this.classList.add('card-flash');
+            document.getElementById('tapIcon')?.classList.add('card-flash');
+            setTimeout(() => document.getElementById('kioskForm')?.submit(), 200);
+          }
+        }
+      });
+
+      // Keep focus always on the input (kiosk mode)
+      document.addEventListener('click', function() { input.focus(); });
+      input.focus();
+    }
+
+    // ── Auto-clear countdown ──
+    {% if student %}
+    let secs = 30;
     const bar = document.getElementById('timerBar');
     const cd = document.getElementById('countdown');
-    const interval = setInterval(() => {
-      seconds--;
-      if (cd) cd.textContent = seconds;
-      if (bar) bar.style.width = (seconds / 30 * 100) + '%';
-      if (seconds <= 0) {
-        clearInterval(interval);
-        window.location.href = '{% url "performance:kiosk" %}';
-      }
+    const iv = setInterval(() => {
+      secs--;
+      if (cd) cd.textContent = secs;
+      if (bar) bar.style.width = (secs / 30 * 100) + '%';
+      if (secs <= 0) { clearInterval(iv); window.location.href = '{% url "performance:kiosk" %}{% if school_code %}?school={{ school_code }}{% endif %}'; }
     }, 1000);
-    // Reset timer on any interaction
-    document.addEventListener('click', () => { seconds = 30; });
-    document.addEventListener('keydown', () => { seconds = 30; });
-  </script>
-  {% endif %}
+    // Reset on interaction
+    ['click','keydown','touchstart'].forEach(e => document.addEventListener(e, () => { secs = 30; }));
+    {% endif %}
 
+    // ── Video fallback ──
+    const video = document.getElementById('bgVideo');
+    if (video) {
+      video.addEventListener('error', function() {
+        // Hide video, keep dark gradient overlay
+        this.parentElement.style.display = 'none';
+      }, true);
+    }
+
+    // ── Web NFC API (progressive enhancement for NFC-capable devices) ──
+    if ('NDEFReader' in window) {
+      const nfc = new NDEFReader();
+      nfc.scan().then(() => {
+        nfc.addEventListener('reading', ({ serialNumber }) => {
+          const inp = document.getElementById('studentIdInput');
+          if (inp) {
+            inp.value = serialNumber.replace(/:/g,'').toUpperCase();
+            setTimeout(() => document.getElementById('kioskForm')?.submit(), 300);
+          }
+        });
+      }).catch(() => {});
+    }
+  </script>
 </body>
 </html>

@@ -9,7 +9,7 @@ import sys
 import platform
 
 from .models import AcademicRecord, Student, Course, Department
-from accounts.models import UserProfile
+from accounts.models import UserProfile, School, KioskLookup
 import csv
 from .services.analytics import (
     get_available_years,
@@ -41,6 +41,17 @@ def _get_user_role(user):
 @login_required
 def analytics_dashboard(request):
     role = _get_user_role(request.user)
+
+    # Subscription gate for school-linked users
+    if role in ('school_admin', 'teacher', 'student'):
+        try:
+            school = (request.user.managed_school if hasattr(request.user, 'managed_school')
+                      else None) or request.user.profile.school
+            if school and not school.is_accessible:
+                return redirect('accounts:subscription_expired')
+        except Exception:
+            pass
+
     if role == 'system_admin':
         return _system_admin_dashboard(request)
     elif role == 'school_admin':
@@ -332,8 +343,8 @@ def _student_dashboard(request, student_override=None):
 
 def kiosk_lookup(request):
     """
-    Public kiosk view — students tap/type their student ID to view their
-    own academic snapshot. No login required. Auto-clears after 30 seconds.
+    Public kiosk — students tap/scan their ID card to view their academic snapshot.
+    No login required. Logs every lookup to KioskLookup. Auto-clears after 30s.
     """
     student = None
     course_data = []
@@ -343,11 +354,41 @@ def kiosk_lookup(request):
     searched = False
     selected_year = TARGET_YEAR
 
+    # Resolve school context from ?school= query param
+    school_code = request.GET.get('school', '') or request.POST.get('school_code', '')
+    school_ctx = None
+    if school_code:
+        from accounts.models import School as SchoolModel
+        school_ctx = SchoolModel.objects.filter(code__iexact=school_code).first()
+
     if request.method == 'POST':
         searched = True
         sid = request.POST.get('student_id', '').strip().upper()
         if sid:
             student = Student.objects.filter(student_id__iexact=sid).first()
+
+            # Determine school from student's profile if not provided
+            if student and not school_ctx:
+                try:
+                    from accounts.models import UserProfile as UP
+                    up = UP.objects.filter(student_id_ref__iexact=sid).first()
+                    if up and up.school:
+                        school_ctx = up.school
+                except Exception:
+                    pass
+
+            found = student is not None
+
+            # Log the lookup
+            ip = request.META.get('REMOTE_ADDR')
+            KioskLookup.objects.create(
+                student_id_searched=sid,
+                student=student,
+                school=school_ctx,
+                found=found,
+                ip_address=ip,
+            )
+
             if student:
                 records = list(AcademicRecord.objects.filter(student=student, academic_year=selected_year))
                 if records:
@@ -380,7 +421,7 @@ def kiosk_lookup(request):
                 else:
                     prediction, pred_color = 'No Records', 'gray'
             else:
-                error = f'Student ID "{sid}" not found. Please check your card and try again.'
+                error = f'Student ID "{sid}" was not found in the system. Please check your card or contact your school office.'
         else:
             error = 'Please enter or scan your Student ID.'
 
@@ -396,6 +437,8 @@ def kiosk_lookup(request):
         'error': error,
         'searched': searched,
         'selected_year': selected_year,
+        'school_ctx': school_ctx,
+        'school_code': school_code,
     }
     return render(request, 'performance/kiosk.html', context)
 

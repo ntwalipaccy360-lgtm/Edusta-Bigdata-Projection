@@ -1,2 +1,4 @@
 - [Role-based dashboards](role-based-dashboards.md) — 4-role system (system_admin/school_admin/teacher/student) via UserProfile model; router in performance/views.py `_get_user_role()`; `user_role` context var injected by accounts.context_processors.user_role.
-- [Kiosk public URL](kiosk-design.md) — `/performance/kiosk/` is login-free; auto-clears after 30s JS countdown; standalone dark template (no base.html); student ID lookup by student_id field.
+- [Kiosk public URL](kiosk-design.md) — `/performance/kiosk/` is login-free; auto-clears after 30s JS countdown; standalone dark template (no base.html); student ID lookup by student_id field; logs every scan to KioskLookup model.
+- [School subscription system](school-subscription.md) — School model gates access via is_accessible property; auto-expires on subscription_end date; system admin only creates school admins; school admins create teachers/students within their school.
+- [Student ID auto-generation](student-id-gen.md) — Format: {SCHOOL_CODE}{YY}{DEPT}{SEQ:03d} e.g. GS25IT047; stored in UserProfile.student_id_ref; deduped against Student.student_id and UserProfile.student_id_ref.
