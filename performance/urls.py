@@ -5,6 +5,7 @@ app_name = 'performance'
 
 urlpatterns = [
     path('', views.analytics_dashboard, name='dashboard'),
+    path('kiosk/', views.kiosk_lookup, name='kiosk'),
     path('risk-tracker/', views.risk_tracker, name='risk_tracker'),
     path('graduation/', views.graduation_analytics, name='graduation'),
     path('insights/', views.institutional_insights, name='insights'),

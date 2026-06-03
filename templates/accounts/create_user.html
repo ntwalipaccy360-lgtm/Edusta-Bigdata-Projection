@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% block title %}Create User - EduStat{% endblock %}
 
 {% block content %}
@@ -13,69 +12,127 @@
         </a>
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Create New User</h1>
-            <p class="text-sm text-gray-500">Add a new account for EduStat access</p>
+            <p class="text-sm text-gray-500">Add a new account and assign their role in EduStat</p>
         </div>
     </div>
 
     <!-- Form -->
-    <div class="bg-white rounded-xl shadow-soft border border-gray-100 p-6 sm:p-8">
-        <form method="post" class="space-y-5">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8">
+        <form method="post" class="space-y-5" id="createUserForm">
             {% csrf_token %}
 
+            <!-- Name row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">First Name</label>
                     {{ form.first_name }}
-                    {% if form.first_name.errors %}
-                    <p class="mt-1 text-xs text-red-600">{{ form.first_name.errors.0 }}</p>
-                    {% endif %}
+                    {% if form.first_name.errors %}<p class="mt-1 text-xs text-red-600">{{ form.first_name.errors.0 }}</p>{% endif %}
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Last Name</label>
                     {{ form.last_name }}
-                    {% if form.last_name.errors %}
-                    <p class="mt-1 text-xs text-red-600">{{ form.last_name.errors.0 }}</p>
-                    {% endif %}
+                    {% if form.last_name.errors %}<p class="mt-1 text-xs text-red-600">{{ form.last_name.errors.0 }}</p>{% endif %}
                 </div>
             </div>
 
+            <!-- Username -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Username <span class="text-red-500">*</span></label>
                 {{ form.username }}
-                {% if form.username.errors %}
-                <p class="mt-1 text-xs text-red-600">{{ form.username.errors.0 }}</p>
-                {% endif %}
+                {% if form.username.errors %}<p class="mt-1 text-xs text-red-600">{{ form.username.errors.0 }}</p>{% endif %}
                 <p class="mt-1 text-xs text-gray-400">This is what the user will use to log in.</p>
             </div>
 
+            <!-- Email -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
                 {{ form.email }}
-                {% if form.email.errors %}
-                <p class="mt-1 text-xs text-red-600">{{ form.email.errors.0 }}</p>
-                {% endif %}
+                {% if form.email.errors %}<p class="mt-1 text-xs text-red-600">{{ form.email.errors.0 }}</p>{% endif %}
             </div>
 
+            <!-- Password -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
                 {{ form.password }}
-                {% if form.password.errors %}
-                <p class="mt-1 text-xs text-red-600">{{ form.password.errors.0 }}</p>
-                {% endif %}
-                <p class="mt-1 text-xs text-gray-400">Share this password securely with the user. They can change it after logging in.</p>
+                {% if form.password.errors %}<p class="mt-1 text-xs text-red-600">{{ form.password.errors.0 }}</p>{% endif %}
+                <p class="mt-1 text-xs text-gray-400">Share this securely. The user can change it after logging in.</p>
             </div>
 
-            <div class="flex items-center gap-3 p-4 bg-purple-50 rounded-lg border border-purple-100">
-                {{ form.is_superuser }}
-                <div>
-                    <label class="text-sm font-semibold text-gray-700">Admin Privileges</label>
-                    <p class="text-xs text-gray-500 mt-0.5">Admins can manage users and access all system settings.</p>
+            <!-- Role Selector -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Role <span class="text-red-500">*</span></label>
+                <div class="grid grid-cols-2 gap-3" id="roleCards">
+                    <label class="role-card cursor-pointer">
+                        <input type="radio" name="role" value="system_admin" class="sr-only" {% if form.role.value == 'system_admin' %}checked{% endif %}>
+                        <div class="role-card-inner p-4 rounded-xl border-2 border-gray-200 hover:border-red-400 transition-all">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center text-lg">🔐</div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">System Admin</p>
+                                    <p class="text-xs text-gray-500">Full system access</p>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="role-card cursor-pointer">
+                        <input type="radio" name="role" value="school_admin" class="sr-only" {% if form.role.value == 'school_admin' %}checked{% endif %}>
+                        <div class="role-card-inner p-4 rounded-xl border-2 border-gray-200 hover:border-blue-400 transition-all">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center text-lg">🏫</div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">School Admin</p>
+                                    <p class="text-xs text-gray-500">Analytics & data</p>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="role-card cursor-pointer">
+                        <input type="radio" name="role" value="teacher" class="sr-only" checked>
+                        <div class="role-card-inner p-4 rounded-xl border-2 border-green-400 hover:border-green-400 transition-all" style="border-color:#006D33;">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center text-lg">📚</div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">Teacher</p>
+                                    <p class="text-xs text-gray-500">Class & grade mgmt</p>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="role-card cursor-pointer">
+                        <input type="radio" name="role" value="student" class="sr-only" {% if form.role.value == 'student' %}checked{% endif %}>
+                        <div class="role-card-inner p-4 rounded-xl border-2 border-gray-200 hover:border-purple-400 transition-all">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center text-lg">🎓</div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">Student</p>
+                                    <p class="text-xs text-gray-500">Personal grades only</p>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
                 </div>
+                {% if form.role.errors %}<p class="mt-1 text-xs text-red-600">{{ form.role.errors.0 }}</p>{% endif %}
             </div>
 
+            <!-- School Name -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">School / Institution</label>
+                {{ form.school_name }}
+                {% if form.school_name.errors %}<p class="mt-1 text-xs text-red-600">{{ form.school_name.errors.0 }}</p>{% endif %}
+            </div>
+
+            <!-- Student ID ref (shown only for student role) -->
+            <div id="studentIdField">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Student Record ID</label>
+                {{ form.student_id_ref }}
+                {% if form.student_id_ref.errors %}<p class="mt-1 text-xs text-red-600">{{ form.student_id_ref.errors.0 }}</p>{% endif %}
+                <p class="mt-1 text-xs text-gray-400">{{ form.student_id_ref.help_text }}</p>
+            </div>
+
+            <!-- Submit -->
             <div class="flex items-center gap-3 pt-2">
                 <button type="submit"
-                    class="flex-1 sm:flex-none px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all shadow-soft hover:shadow-medium">
+                    class="flex-1 sm:flex-none px-8 py-3 bg-[#003DA5] hover:bg-[#001f6e] text-white font-semibold rounded-xl transition-all shadow-sm">
                     Create User
                 </button>
                 <a href="{% url 'accounts:users' %}"
@@ -86,4 +143,38 @@
         </form>
     </div>
 </div>
+
+<script>
+(function() {
+    const colorMap = {
+        system_admin: '#ef4444',
+        school_admin: '#003DA5',
+        teacher: '#006D33',
+        student: '#9333ea',
+    };
+
+    function updateCards() {
+        document.querySelectorAll('.role-card').forEach(label => {
+            const input = label.querySelector('input[type="radio"]');
+            const inner = label.querySelector('.role-card-inner');
+            if (input.checked) {
+                inner.style.borderColor = colorMap[input.value] || '#6366f1';
+                inner.style.background = '#f0f4ff';
+            } else {
+                inner.style.borderColor = '#e5e7eb';
+                inner.style.background = '';
+            }
+        });
+        // Show/hide student ID field
+        const studentChecked = document.querySelector('input[name="role"][value="student"]').checked;
+        document.getElementById('studentIdField').style.display = studentChecked ? '' : 'none';
+    }
+
+    document.querySelectorAll('input[name="role"]').forEach(radio => {
+        radio.addEventListener('change', updateCards);
+    });
+
+    updateCards();
+})();
+</script>
 {% endblock %}

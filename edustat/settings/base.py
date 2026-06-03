@@ -42,6 +42,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'performance.context_processors.global_stats',
+                'accounts.context_processors.user_role',
             ],
         },
     },

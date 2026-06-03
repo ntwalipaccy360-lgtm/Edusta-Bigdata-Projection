@@ -1,0 +1,2 @@
+- [Role-based dashboards](role-based-dashboards.md) — 4-role system (system_admin/school_admin/teacher/student) via UserProfile model; router in performance/views.py `_get_user_role()`; `user_role` context var injected by accounts.context_processors.user_role.
+- [Kiosk public URL](kiosk-design.md) — `/performance/kiosk/` is login-free; auto-clears after 30s JS countdown; standalone dark template (no base.html); student ID lookup by student_id field.

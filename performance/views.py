@@ -1,10 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.views.generic import CreateView
 from django.http import HttpResponse
+import django
+import sys
+import platform
 
 from .models import AcademicRecord, Student, Course, Department
+from accounts.models import UserProfile
 import csv
 from .services.analytics import (
     get_available_years,
@@ -20,26 +25,74 @@ from .services.analytics import (
 from .services.data_import import import_records_from_file
 
 
+# ─── Role helper ──────────────────────────────────────────────────────────────
+
+def _get_user_role(user):
+    if user.is_superuser:
+        return 'system_admin'
+    try:
+        return user.profile.role
+    except Exception:
+        return 'teacher' if user.is_staff else 'student'
+
+
 # ─── Role-based dashboard router ──────────────────────────────────────────────
 
 @login_required
 def analytics_dashboard(request):
-    if request.user.is_superuser:
-        return _admin_dashboard(request)
-    elif request.user.is_staff:
+    role = _get_user_role(request.user)
+    if role == 'system_admin':
+        return _system_admin_dashboard(request)
+    elif role == 'school_admin':
+        return _school_admin_dashboard(request)
+    elif role == 'teacher':
         return _staff_dashboard(request)
     else:
         return _student_dashboard(request)
 
 
-# ─── Admin dashboard ──────────────────────────────────────────────────────────
+# ─── 1. System Admin Dashboard ────────────────────────────────────────────────
 
-def _admin_dashboard(request):
+def _system_admin_dashboard(request):
+    users = User.objects.select_related('profile').all().order_by('-date_joined')
+    recent_users = users[:8]
+
+    role_counts = {}
+    for key, label in UserProfile.ROLE_CHOICES:
+        role_counts[key] = UserProfile.objects.filter(role=key).count()
+
+    total_students = Student.objects.count()
+    total_records = AcademicRecord.objects.count()
+    total_departments = Department.objects.count()
+
+    system_info = {
+        'django_version': django.get_version(),
+        'python_version': f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}',
+        'platform': platform.system(),
+        'db_engine': 'SQLite (Development)',
+    }
+
+    context = {
+        'users': users,
+        'recent_users': recent_users,
+        'role_counts': role_counts,
+        'total_users': users.count(),
+        'total_students': total_students,
+        'total_records': total_records,
+        'total_departments': total_departments,
+        'system_info': system_info,
+        'role_choices': UserProfile.ROLE_CHOICES,
+    }
+    return render(request, 'performance/admin_system.html', context)
+
+
+# ─── 2. School Admin Dashboard ────────────────────────────────────────────────
+
+def _school_admin_dashboard(request):
     years = get_available_years()
     selected_year = get_selected_year(request)
     ctx = get_dashboard_context(selected_year)
 
-    # Add department-level pass/fail breakdown for admin view
     dept_records = []
     for dept in Department.objects.all():
         records = AcademicRecord.objects.filter(
@@ -75,7 +128,7 @@ def _admin_dashboard(request):
     return render(request, 'performance/overview.html', context)
 
 
-# ─── Staff dashboard ──────────────────────────────────────────────────────────
+# ─── 3. Teacher Dashboard ─────────────────────────────────────────────────────
 
 def _staff_dashboard(request):
     selected_year = get_selected_year(request)
@@ -135,7 +188,6 @@ def _staff_dashboard(request):
     medium = sum(1 for s in student_data if s['risk'] == 'medium')
     low = sum(1 for s in student_data if s['risk'] == 'low')
 
-    # Subject performance
     subjects = {}
     for rec in AcademicRecord.objects.filter(academic_year=selected_year):
         code = rec.course_code
@@ -173,24 +225,32 @@ def _staff_dashboard(request):
     return render(request, 'performance/staff_dashboard.html', context)
 
 
-# ─── Student dashboard ────────────────────────────────────────────────────────
+# ─── 4. Student Dashboard ─────────────────────────────────────────────────────
 
-def _student_dashboard(request):
+def _student_dashboard(request, student_override=None):
     selected_year = get_selected_year(request)
     years = get_available_years()
 
-    # Try to link Django user → Student by username or name
-    student = None
-    try:
-        student = (
-            Student.objects.filter(student_id__iexact=request.user.username).first()
-            or Student.objects.filter(
-                first_name__iexact=request.user.first_name,
-                last_name__iexact=request.user.last_name,
-            ).first()
-        )
-    except Exception:
-        pass
+    student = student_override
+    if student is None:
+        try:
+            student = (
+                Student.objects.filter(student_id__iexact=request.user.username).first()
+                or Student.objects.filter(
+                    first_name__iexact=request.user.first_name,
+                    last_name__iexact=request.user.last_name,
+                ).first()
+            )
+            # Also try profile student_id_ref
+            if student is None:
+                try:
+                    ref = request.user.profile.student_id_ref
+                    if ref:
+                        student = Student.objects.filter(student_id__iexact=ref).first()
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
     if student:
         records = list(AcademicRecord.objects.filter(student=student, academic_year=selected_year))
@@ -225,25 +285,25 @@ def _student_dashboard(request):
 
             recs = []
             if avg_ca < 20:
-                recs.append({'type': 'warning', 'icon': '⚠️', 'text': 'Your CA scores are below the threshold. Seek academic support immediately.'})
+                recs.append({'type': 'warning', 'icon': '⚠️', 'text': 'Your CA scores are below threshold. Seek academic support immediately.'})
             if avg_att < 75:
-                recs.append({'type': 'warning', 'icon': '📅', 'text': f'Attendance is {avg_att}% — below the required 75%. Please attend all scheduled classes.'})
+                recs.append({'type': 'warning', 'icon': '📅', 'text': f'Attendance is {avg_att}% — below the required 75%. Attend all classes.'})
             if avg_total >= 70:
-                recs.append({'type': 'success', 'icon': '🏆', 'text': 'Excellent work! Consider academic leadership programmes or peer tutoring roles.'})
+                recs.append({'type': 'success', 'icon': '🏆', 'text': 'Excellent work! Consider academic leadership or peer tutoring roles.'})
             elif avg_total >= 50:
-                recs.append({'type': 'info', 'icon': '📚', 'text': 'You are on track. Focus on your weaker subjects to strengthen your overall grade.'})
+                recs.append({'type': 'info', 'icon': '📚', 'text': 'You are on track. Focus on weaker subjects to strengthen your overall grade.'})
             if not recs:
-                recs.append({'type': 'info', 'icon': '💡', 'text': 'Stay consistent with your studies and maintain regular attendance.'})
+                recs.append({'type': 'info', 'icon': '💡', 'text': 'Stay consistent with studies and maintain regular attendance.'})
         else:
             avg_ca = avg_total = avg_att = gpa = 0
             prediction, pred_color = 'No Records', 'gray'
             course_data = []
-            recs = [{'type': 'info', 'icon': '📋', 'text': 'No academic records found for this year. Contact your department administrator.'}]
+            recs = [{'type': 'info', 'icon': '📋', 'text': 'No academic records found for this year. Contact your department.'}]
     else:
         avg_ca = avg_total = avg_att = gpa = 0
         prediction, pred_color = 'Not Linked', 'gray'
         course_data = []
-        recs = [{'type': 'info', 'icon': '👤', 'text': 'Your student profile has not been linked. Contact your system administrator.'}]
+        recs = [{'type': 'info', 'icon': '👤', 'text': 'Your student profile is not linked. Contact your administrator.'}]
 
     all_records = AcademicRecord.objects.filter(academic_year=selected_year)
     school_avg = 0
@@ -266,6 +326,78 @@ def _student_dashboard(request):
         'school_avg': school_avg,
     }
     return render(request, 'performance/student_dashboard.html', context)
+
+
+# ─── 5. Public Kiosk (Student Card Lookup) ────────────────────────────────────
+
+def kiosk_lookup(request):
+    """
+    Public kiosk view — students tap/type their student ID to view their
+    own academic snapshot. No login required. Auto-clears after 30 seconds.
+    """
+    student = None
+    course_data = []
+    avg_ca = avg_total = avg_att = gpa = 0
+    prediction = pred_color = ''
+    error = None
+    searched = False
+    selected_year = TARGET_YEAR
+
+    if request.method == 'POST':
+        searched = True
+        sid = request.POST.get('student_id', '').strip().upper()
+        if sid:
+            student = Student.objects.filter(student_id__iexact=sid).first()
+            if student:
+                records = list(AcademicRecord.objects.filter(student=student, academic_year=selected_year))
+                if records:
+                    ca_vals = [r.ca_total or 0 for r in records]
+                    totals = [(r.ca_total or 0) + (r.mid_term or 0) + (r.final_exam or 0) for r in records]
+                    att_vals = [r.attendance_rate or 0 for r in records if r.attendance_rate is not None]
+                    avg_ca = round(sum(ca_vals) / len(ca_vals), 1)
+                    avg_total = round(sum(totals) / len(totals), 1)
+                    avg_att = round((sum(att_vals) / len(att_vals) * 100) if att_vals else 0, 1)
+                    gpa = round(avg_total / 100 * 4.0, 2)
+
+                    if avg_ca >= 25 and avg_att >= 75:
+                        prediction, pred_color = 'Likely to Pass', 'green'
+                    elif avg_ca < 15 or avg_att < 60:
+                        prediction, pred_color = 'At Risk', 'red'
+                    else:
+                        prediction, pred_color = 'Borderline', 'yellow'
+
+                    for r in records:
+                        total = (r.ca_total or 0) + (r.mid_term or 0) + (r.final_exam or 0)
+                        course_data.append({
+                            'course': r.course_code,
+                            'ca': r.ca_total or 0,
+                            'midterm': r.mid_term or 0,
+                            'final': r.final_exam or 0,
+                            'total': round(total, 1),
+                            'status': 'Pass' if total >= 50 else 'Fail',
+                            'attendance': round((r.attendance_rate or 0) * 100, 1),
+                        })
+                else:
+                    prediction, pred_color = 'No Records', 'gray'
+            else:
+                error = f'Student ID "{sid}" not found. Please check your card and try again.'
+        else:
+            error = 'Please enter or scan your Student ID.'
+
+    context = {
+        'student': student,
+        'course_data': course_data,
+        'avg_ca': avg_ca,
+        'avg_total': avg_total,
+        'avg_att': avg_att,
+        'gpa': gpa,
+        'prediction': prediction,
+        'pred_color': pred_color,
+        'error': error,
+        'searched': searched,
+        'selected_year': selected_year,
+    }
+    return render(request, 'performance/kiosk.html', context)
 
 
 # ─── Shared views ─────────────────────────────────────────────────────────────
@@ -448,6 +580,4 @@ def download_template(request):
 
 class RecordCreateView(CreateView):
     model = AcademicRecord
-    fields = ['student', 'course_code', 'academic_year', 'ca_total', 'mid_term', 'final_exam', 'attendance_rate', 'teacher_id']
-    template_name = 'performance/record_form.html'
-    success_url = '/performance/'
+    fields = '__all__'
